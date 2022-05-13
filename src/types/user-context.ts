@@ -1,4 +1,5 @@
 import { WebSocket } from "ws";
+import { CustomWebSocket } from "./websocket";
 
 export interface UserContext {
   username: string;
@@ -26,4 +27,6 @@ export interface ServerContext {
   getUserContext(username: string): UserContext | undefined;
   getUserConnection(username: string): WebSocket[] | undefined;
   getGroupContext(groupName: string): GroupContext | undefined;
+  setClientConnection(webSocket: CustomWebSocket): void;
+  removeClientConnection(webSocket: CustomWebSocket): void;
 }
