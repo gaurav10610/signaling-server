@@ -1,6 +1,6 @@
 import { ServerOptions, WebSocket, WebSocketServer } from "ws";
 import { IncomingMessage } from "http";
-import { v4 as uuid } from "uuid";
+import { CommonUtils } from "../utils/common-utils";
 
 export class WsServer {
   private webSocketServer: WebSocketServer;
@@ -23,7 +23,7 @@ export class WsServer {
     console.log(`new client connected!`);
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
-    request.webSocket.id = uuid();
+    webSocket.id = CommonUtils.generateUniqueId();
   }
 
   handleServerError(error: Error) {
