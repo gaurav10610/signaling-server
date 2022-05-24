@@ -1,6 +1,10 @@
 import { IncomingMessage } from "http";
 import { CustomWebSocket } from "../../types/websocket";
 import { CloseEvent, ErrorEvent, Event, MessageEvent } from "ws";
+import {
+  BaseSignalingMessage,
+  SignalingMessageType,
+} from "../../types/message";
 
 export class WsClientHandler {
   onClientConnect(webSocket: CustomWebSocket, request: IncomingMessage) {
@@ -31,7 +35,19 @@ export class WsClientHandler {
   onClientMessage(message: MessageEvent) {
     const webSocket: CustomWebSocket = <CustomWebSocket>message.target;
     if (message.type === "string") {
-      const data: any = JSON.parse(<string>message.data);
+      const data: BaseSignalingMessage = <BaseSignalingMessage>(
+        JSON.parse(<string>message.data)
+      );
+
+      switch (data.type) {
+        case SignalingMessageType.REGISTER:
+          break;
+
+        case SignalingMessageType.DEREGISTER:
+          break;
+
+        default:
+      }
     } else {
       global.logger.error(`error parsing message from ${webSocket.id}`);
     }

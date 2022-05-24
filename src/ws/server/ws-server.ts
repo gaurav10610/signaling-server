@@ -1,5 +1,5 @@
 import { ServerOptions, WebSocketServer } from "ws";
-import { WsClientHandler } from "./client/ws-client";
+import { WsClientHandler } from "../client/ws-client";
 
 export class WsServer {
   private server: WebSocketServer;
