@@ -23,11 +23,11 @@ export class WsServer {
     this.server.on("error", this.onServerError.bind(this));
   }
 
-  onServerClose() {
+  private onServerClose() {
     global.logger.info("web socket server is closed");
   }
 
-  onServerError(error: Error) {
+  private onServerError(error: Error) {
     global.logger.error(
       `error encountered on ws server with name: ${error.name} & message: ${error.message}`
     );

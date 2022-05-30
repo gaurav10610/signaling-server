@@ -4,7 +4,22 @@ export interface BaseSignalingMessage {
   type: SignalingMessageType;
 }
 
+// connection acknowledment
+export interface ConnectAck extends BaseSignalingMessage {
+  authorization: string;
+}
+
 export enum SignalingMessageType {
-  REGISTER = "register",
-  DEREGISTER = "deregister",
+  CONNECT = "connect",
+}
+
+export enum IPCMessageType {
+  USER_STATUS,
+  BROADCAST_MESSAGE,
+  USER_MESSAGE,
+}
+
+export interface IPCMessage {
+  type: IPCMessageType;
+  message: BaseSignalingMessage;
 }

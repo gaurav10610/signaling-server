@@ -139,4 +139,8 @@ export class InMemoryServerContext implements ServerContext {
       this.clientConnections.delete(webSocket.id);
     }
   }
+
+  getConnections(): Map<string, CustomWebSocket> {
+      return this.clientConnections;
+  }
 }

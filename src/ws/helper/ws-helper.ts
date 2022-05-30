@@ -4,8 +4,8 @@ import { CustomWebSocket } from "../../types/websocket";
 
 /**
  * handle user registeration on signaling server
- * @param message
- * @param webSocket
+ * @param message received message on server
+ * @param webSocket websocket client connection
  */
 exports.handleClientRegister = async (
   message: BaseSignalingMessage,
@@ -35,14 +35,25 @@ exports.handleClientRegister = async (
   global.serverContext.setUserContext(message.from, userContext);
 };
 
+/**
+ * handle user de-regiter on signaling-server
+ * @param message received message on server
+ * @param webSocket websocket client connection
+ */
 exports.handleClientDeRegister = async (
   message: BaseSignalingMessage,
   webSocket: CustomWebSocket
 ) => {
   if (global.serverContext.hasUserContext(message.from)) {
-    const userContext: UserContext = global.serverContext.getUserContext(
+    const serverContext: ServerContext = global.serverContext;
+    const userContext: UserContext = serverContext.getUserContext(
       message.from
     )!;
+
+    /**
+     * remove user's context
+     */
+    serverContext.removeUserContext(message.from);
 
     const groups: string[] | undefined = userContext.groups;
 
@@ -51,7 +62,7 @@ exports.handleClientDeRegister = async (
      */
     if (groups && groups.length > 0) {
       groups.forEach((groupName) => {
-        global.serverContext.removeUserFromGroup(
+        serverContext.removeUserFromGroup(
           webSocket.id!,
           message.from,
           groupName
@@ -61,9 +72,31 @@ exports.handleClientDeRegister = async (
   }
 };
 
-exports.broadCastMessage = async (message: BaseSignalingMessage) => {};
+/**
+ * broadcast the specified message to all the clients
+ * @param message message payload that needs to be sent
+ */
+exports.broadCastMessage = async (message: BaseSignalingMessage) => {
+  global.serverContext
+    .getConnections()
+    .forEach((socketConnection, connectionId) => {
+      try {
+        socketConnection.send(JSON.stringify(message));
+      } catch (e) {
+        global.logger.error(
+          `unable to send broadcast message to: ${connectionId}`
+        );
+      }
+    });
 
-exports.sendClientMessage = async (message: BaseSignalingMessage) => {};
+  /**
+   * if server is running in cluster mode then send this message
+   * to master process which will send this message to clients connected
+   * to other server instances as well
+   */
+};
+
+exports.sendSocketMessage = async (message: BaseSignalingMessage) => {};
 
 exports.sendIPCMasterMessage = async (message: BaseSignalingMessage) => {};
 

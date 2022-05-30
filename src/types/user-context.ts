@@ -45,4 +45,5 @@ export interface ServerContext {
   getUserConnections(username: string): CustomWebSocket[] | undefined;
   setClientConnection(webSocket: CustomWebSocket): void;
   removeClientConnection(webSocket: CustomWebSocket): void;
+  getConnections(): Map<string, CustomWebSocket>;
 }
