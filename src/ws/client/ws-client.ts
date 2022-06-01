@@ -1,12 +1,5 @@
 import { IncomingMessage } from "http";
 import { CustomWebSocket } from "../../types/websocket";
-import WebSocket, {
-  CloseEvent,
-  ErrorEvent,
-  Event,
-  MessageEvent,
-  Server,
-} from "ws";
 import {
   BaseSignalingMessage,
   ConnectAck,
@@ -21,8 +14,12 @@ export class WsClientHandler {
   onClientConnect(webSocket: CustomWebSocket, request: IncomingMessage) {
     global.serverContext.setClientConnection(webSocket);
     this.handleConnectionOpen(webSocket);
-    webSocket.on("close", this.onClientClose.bind(this));
-    webSocket.on("error", this.onClientError.bind(this));
+    webSocket.on("close", (code: number, reason: Buffer) => {
+      this.handleClientDisconnect(webSocket);
+    });
+    webSocket.on("error", (error: Error) => {
+      this.handleClientError(error, webSocket);
+    });
     webSocket.on("message", (message: any) => {
       this.handleClientMessage(message, webSocket);
     });
@@ -46,13 +43,13 @@ export class WsClientHandler {
     webSocket.send(JSON.stringify(acknowledment));
   }
 
-  onClientClose(event: any) {
-    const webSocket: CustomWebSocket = <CustomWebSocket>event.target;
-    global.logger.info(`websocket connection closed with id: ${webSocket.id}`);
+  handleClientDisconnect(webSocket: CustomWebSocket) {
+    global.logger.info(
+      `websocket connection with id: ${webSocket.id} is closed`
+    );
   }
 
-  onClientError(error: ErrorEvent) {
-    const webSocket: CustomWebSocket = <CustomWebSocket>error.target;
+  handleClientError(error: Error, webSocket: CustomWebSocket) {
     global.logger.info(
       `error occured on websocket connection with id: ${webSocket.id} & reason: ${error.message}`
     );
