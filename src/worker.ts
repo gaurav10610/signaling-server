@@ -5,27 +5,35 @@ import { ServerConstants } from "./utils/ServerConstants";
 import { WsClientHandler } from "./ws/client/ws-client";
 import { WsServer } from "./ws/server/ws-server";
 
-function init(): void {
-  // configure logger
-  global.logger = new SimpleLogger().getLogger();
-  global.logger.info(`server has started!`);
+export class WorkerServer {
+  private readonly serverConfig: any;
+  constructor(serverConfig: any) {
+    this.serverConfig = serverConfig;
+  }
 
-  // initialize server context
-  global.serverContext = new InMemoryServerContext();
+  public async init(): Promise<void> {
+    // configure logger
+    global.logger = new SimpleLogger().getLogger();
+    global.logger.info(`initializaing worker server instance!`);
 
-  const options: ServerOptions = {
-    port: ServerConstants.WS_PORT,
-  };
+    // initialize server context
+    global.serverContext = new InMemoryServerContext();
 
-  const wsServer: WsServer = new WsServer(
-    new WsClientHandler(),
-    options,
-    () => {
-      global.logger.info(
-        `web socket started at port: ${ServerConstants.WS_PORT}`
-      );
-    }
-  );
+    const options: ServerOptions = {
+      port: ServerConstants.WS_PORT,
+    };
 
-  wsServer.registerWsEventHandlers();
+    // websocket server initialization
+    const wsServer: WsServer = new WsServer(
+      new WsClientHandler(),
+      options,
+      () => {
+        global.logger.info(
+          `web socket started at port: ${ServerConstants.WS_PORT}`
+        );
+      }
+    );
+
+    wsServer.registerWsEventHandlers();
+  }
 }

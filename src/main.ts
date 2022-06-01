@@ -1,8 +1,14 @@
-import { SimpleLogger } from "./logging/logger-impl";
+import { WorkerServer } from "./worker";
 
-function init(): void {
-  global.logger = new SimpleLogger().getLogger();
-  global.logger.info(`server has started!`);
+export async function init(): Promise<void> {
+  console.log(`${process.env.NODE_ENV} profile is active`);
+  const serverConfig: any = {};
+  const workerServer: WorkerServer = new WorkerServer(serverConfig);
+  await workerServer.init();
 }
 
-init();
+if (process.env.NODE_ENV !== "test") {
+  init().then(() => {
+    global.logger.info(`instashare server has been started successfully`);
+  });
+}

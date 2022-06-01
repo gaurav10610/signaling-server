@@ -2,8 +2,8 @@ import { ServerOptions, WebSocketServer } from "ws";
 import { WsClientHandler } from "../client/ws-client";
 
 export class WsServer {
-  private server: WebSocketServer;
-  private clientHandler: WsClientHandler;
+  private readonly server: WebSocketServer;
+  private readonly clientHandler: WsClientHandler;
 
   constructor(
     wsClientHandler: WsClientHandler,

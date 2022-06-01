@@ -6,9 +6,11 @@
   "scripts": {
     "start": "npx ts-node src/main.ts",
     "compile": "npx tsc",
-    "compile:run": "npm run compile && nodemon dist/main.js",
+    "js:run": "NODE_ENV=dev nodemon dist/main.js",
+    "compile:run": "npm run compile && NODE_ENV=dev nodemon dist/main.js",
     "lint": "npx eslint . --fix",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "browser:test": "npm run compile && NODE_ENV=test nodemon dist/test/browser/index.js"
   },
   "keywords": [
     "webrtc",
