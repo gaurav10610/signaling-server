@@ -1,6 +1,12 @@
 import { IncomingMessage } from "http";
 import { CustomWebSocket } from "../../types/websocket";
-import { CloseEvent, ErrorEvent, Event, MessageEvent, Server } from "ws";
+import WebSocket, {
+  CloseEvent,
+  ErrorEvent,
+  Event,
+  MessageEvent,
+  Server,
+} from "ws";
 import {
   BaseSignalingMessage,
   ConnectAck,
@@ -14,16 +20,19 @@ export class WsClientHandler {
 
   onClientConnect(webSocket: CustomWebSocket, request: IncomingMessage) {
     global.serverContext.setClientConnection(webSocket);
-    webSocket.on("open", this.onOpen.bind(this));
+    this.handleConnectionOpen(webSocket);
     webSocket.on("close", this.onClientClose.bind(this));
     webSocket.on("error", this.onClientError.bind(this));
-    webSocket.on("message", this.onClientMessage.bind(this));
+    webSocket.on("message", (message: any) => {
+      this.handleClientMessage(message, webSocket);
+    });
   }
 
-  onOpen(event: Event) {
-    const webSocket: CustomWebSocket = <CustomWebSocket>event.target;
-    global.logger.info(`websocket connection open with id: ${webSocket.id}`);
-
+  /**
+   * send connection id to websocket client
+   * @param webSocket
+   */
+  handleConnectionOpen(webSocket: CustomWebSocket) {
     const acknowledment: ConnectAck = {
       from: ServerConstants.THE_INSTASHARE_SERVER,
       to: ServerConstants.THE_INSTASHARE_SERVER,
@@ -37,7 +46,7 @@ export class WsClientHandler {
     webSocket.send(JSON.stringify(acknowledment));
   }
 
-  onClientClose(event: CloseEvent) {
+  onClientClose(event: any) {
     const webSocket: CustomWebSocket = <CustomWebSocket>event.target;
     global.logger.info(`websocket connection closed with id: ${webSocket.id}`);
   }
@@ -49,15 +58,9 @@ export class WsClientHandler {
     );
   }
 
-  onClientMessage(message: MessageEvent) {
-    const webSocket: CustomWebSocket = <CustomWebSocket>message.target;
-    if (message.type === "string") {
-      global.logger.info(message.data);
-      const data: BaseSignalingMessage = <BaseSignalingMessage>(
-        JSON.parse(<string>message.data)
-      );
-    } else {
-      global.logger.error(`error parsing message from ${webSocket.id}`);
-    }
+  handleClientMessage(jsonMessage: any, webSocket: CustomWebSocket) {
+    global.logger.info(`received message from client with id: ${webSocket.id}`);
+    global.logger.info(jsonMessage);
+    const message: BaseSignalingMessage = JSON.parse(jsonMessage);
   }
 }
