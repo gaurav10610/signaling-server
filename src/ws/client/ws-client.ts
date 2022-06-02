@@ -1,27 +1,31 @@
 import { IncomingMessage } from "http";
 import { CustomWebSocket } from "../../types/websocket";
-import {
-  BaseSignalingMessage,
-  ConnectAck,
-  SignalingMessageType,
-} from "../../types/message";
+import { ConnectAck, SignalingMessageType } from "../../types/message";
 import { ServerConstants } from "../../utils/ServerConstants";
+import { WebSocketHelper } from "../helper/ws-helper";
 export class WsClientHandler {
-  constructor() {
-    global.logger.info(`websocket client handler constructed!`);
+  private readonly wsHelper: WebSocketHelper;
+  constructor(wsHelper: WebSocketHelper) {
+    global.logger.info(`websocket client handler initialized!`);
+    this.wsHelper = wsHelper;
   }
 
+  /**
+   * websocket 'connection' event handler
+   * @param webSocket
+   * @param request http request object
+   */
   onClientConnect(webSocket: CustomWebSocket, request: IncomingMessage) {
     global.serverContext.setClientConnection(webSocket);
     this.handleConnectionOpen(webSocket);
     webSocket.on("close", (code: number, reason: Buffer) => {
-      this.handleClientDisconnect(webSocket);
+      this.wsHelper.handleClientDisconnect(webSocket);
     });
     webSocket.on("error", (error: Error) => {
       this.handleClientError(error, webSocket);
     });
     webSocket.on("message", (message: any) => {
-      this.handleClientMessage(message, webSocket);
+      this.wsHelper.handleClientMessage(message, webSocket);
     });
   }
 
@@ -43,21 +47,9 @@ export class WsClientHandler {
     webSocket.send(JSON.stringify(acknowledment));
   }
 
-  handleClientDisconnect(webSocket: CustomWebSocket) {
-    global.logger.info(
-      `websocket connection with id: ${webSocket.id} is closed`
-    );
-  }
-
   handleClientError(error: Error, webSocket: CustomWebSocket) {
     global.logger.info(
       `error occured on websocket connection with id: ${webSocket.id} & reason: ${error.message}`
     );
-  }
-
-  handleClientMessage(jsonMessage: any, webSocket: CustomWebSocket) {
-    global.logger.info(`received message from client with id: ${webSocket.id}`);
-    global.logger.info(jsonMessage);
-    const message: BaseSignalingMessage = JSON.parse(jsonMessage);
   }
 }

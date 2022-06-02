@@ -10,7 +10,7 @@
     "compile:run": "npm run compile && NODE_ENV=dev nodemon dist/main.js",
     "lint": "npx eslint . --fix",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "browser:test": "npm run compile && NODE_ENV=test nodemon dist/test/browser/index.js"
+    "browser:test": "NODE_ENV=test nodemon dist/test/browser/index.js"
   },
   "keywords": [
     "webrtc",

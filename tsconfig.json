@@ -1,6 +1,7 @@
 {
   "extends": "@tsconfig/node16/tsconfig.json",
-  "compilerOptions": { "outDir": "dist" },
+  "compilerOptions": { "outDir": "dist", "watch": true},
   "include": ["src"],
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules"],
+  "compileOnSave": true
 }

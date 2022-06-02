@@ -14,6 +14,9 @@ export class WsServer {
     this.clientHandler = wsClientHandler;
   }
 
+  /**
+   * register server event handlers
+   */
   registerWsEventHandlers() {
     this.server.on("close", this.onServerClose.bind(this));
     this.server.on(
@@ -23,10 +26,17 @@ export class WsServer {
     this.server.on("error", this.onServerError.bind(this));
   }
 
+  /**
+   * handle server close
+   */
   private onServerClose() {
     global.logger.info("web socket server is closed");
   }
 
+  /**
+   * handle server error
+   * @param error
+   */
   private onServerError(error: Error) {
     global.logger.error(
       `error encountered on ws server with name: ${error.name} & message: ${error.message}`

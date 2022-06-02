@@ -11,6 +11,8 @@ export interface ConnectAck extends BaseSignalingMessage {
 
 export enum SignalingMessageType {
   CONNECT = "connect",
+  REGISTER = "register",
+  DEREGISTER = "deregister",
 }
 
 export enum IPCMessageType {
@@ -22,4 +24,8 @@ export enum IPCMessageType {
 export interface IPCMessage {
   type: IPCMessageType;
   message: BaseSignalingMessage;
+}
+
+export interface RegisterAck extends BaseSignalingMessage {
+  success: boolean;
 }

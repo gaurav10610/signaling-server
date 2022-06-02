@@ -38,38 +38,82 @@ export class InMemoryServerContext implements ServerContext {
     this.clientConnections = new Map<string, CustomWebSocket>();
   }
 
+  /**
+   * removes the user context for the user with specied user name
+   * @param username
+   */
   removeUserContext(username: string): void {
     this.userContext.delete(username);
   }
 
+  /**
+   * saves the user context for the user with specied user name
+   * @param username
+   * @param userContext
+   */
   setUserContext(username: string, userContext: UserContext): void {
     this.userContext.set(username, userContext);
   }
 
+  /**
+   * check whether group context exist for the user with specified user name
+   * @param username
+   * @returns
+   */
   hasUserContext(username: string): boolean {
     return this.userContext.has(username);
   }
 
+  /**
+   * get user context for the specified username
+   * @param username
+   * @returns
+   */
   getUserContext(username: string): UserContext | undefined {
     return this.userContext.get(username);
   }
 
+  /**
+   * check whether group context exist for specified group name
+   * @param groupName
+   * @returns
+   */
   hasGroupContext(groupName: string): boolean {
     return this.groupContext.has(groupName);
   }
 
+  /**
+   * get the group context for the group with specified group name
+   * @param groupName
+   * @returns
+   */
   getGroupContext(groupName: string): GroupContext | undefined {
     return this.groupContext.get(groupName);
   }
 
+  /**
+   * saves the specified group context with the specied group name
+   * @param groupName
+   * @param groupContext
+   */
   setGroupContext(groupName: string, groupContext: GroupContext): void {
     this.groupContext.set(groupName, groupContext);
   }
 
+  /**
+   * removes the group context of the group with specified name
+   * @param groupName
+   */
   removeGroupContext(groupName: string): void {
     this.groupContext.delete(groupName);
   }
 
+  /**
+   * add the specified user in the specified group
+   * @param webSocketId
+   * @param username
+   * @param groupName
+   */
   async addUserInGroup(
     webSocketId: string,
     username: string,
@@ -92,6 +136,12 @@ export class InMemoryServerContext implements ServerContext {
     throw Error(`${groupName} group does not exist!`);
   }
 
+  /**
+   * removes the specified user from the specifed group
+   * @param webSocketId
+   * @param username
+   * @param groupName
+   */
   async removeUserFromGroup(
     webSocketId: string,
     username: string,
@@ -113,6 +163,12 @@ export class InMemoryServerContext implements ServerContext {
     }
   }
 
+  /**
+   * get a list of all the websocket connections of the specified users
+   *
+   * @param username
+   * @returns
+   */
   getUserConnections(username: string): CustomWebSocket[] | undefined {
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
@@ -123,6 +179,10 @@ export class InMemoryServerContext implements ServerContext {
       );
   }
 
+  /**
+   * assign a unique id to websocket connection & keep a mapping in clientConnection context
+   * @param webSocket
+   */
   setClientConnection(webSocket: CustomWebSocket): void {
     webSocket.id = CommonUtils.generateUniqueId();
     global.logger.info(
@@ -131,16 +191,31 @@ export class InMemoryServerContext implements ServerContext {
     this.clientConnections.set(webSocket.id, webSocket);
   }
 
+  /**
+   * remove the client mapping from client connection context
+   * @param webSocket
+   */
   removeClientConnection(webSocket: CustomWebSocket): void {
-    global.logger.info(
-      `client connection with connection id: ${webSocket.id} has been removed from context`
-    );
     if (webSocket.id) {
+      global.logger.info(
+        `client connection with connection id: ${webSocket.id} has been removed from context`
+      );
       this.clientConnections.delete(webSocket.id);
     }
   }
 
+  /**
+   * get all client connections
+   *
+   * example -
+   * {
+   *   websocketId1 -> webSocketConnection,
+   *   websocketId2 -> webSocketConnection
+   * }
+   *
+   * @returns
+   */
   getConnections(): Map<string, CustomWebSocket> {
-      return this.clientConnections;
+    return this.clientConnections;
   }
 }
