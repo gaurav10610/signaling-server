@@ -1,4 +1,3 @@
-import { WebSocket } from "ws";
 import { CustomWebSocket } from "./websocket";
 
 export interface UserContext {
@@ -26,11 +25,11 @@ export interface GroupUser {
 export interface ServerContext {
   hasUserContext(username: string): boolean;
   getUserContext(username: string): UserContext | undefined;
-  setUserContext(username: string, userContext: UserContext): void;
+  storeUserContext(username: string, userContext: UserContext): void;
   removeUserContext(username: string): void;
   hasGroupContext(groupName: string): boolean;
   getGroupContext(groupName: string): GroupContext | undefined;
-  setGroupContext(groupName: string, groupContext: GroupContext): void;
+  storeGroupContext(groupName: string, groupContext: GroupContext): void;
   removeGroupContext(groupName: string): void;
   addUserInGroup(
     webSocketId: string,
@@ -42,8 +41,8 @@ export interface ServerContext {
     username: string,
     groupName: string
   ): void;
-  getUserConnections(username: string): CustomWebSocket[] | undefined;
-  setClientConnection(webSocket: CustomWebSocket): void;
+  getUserConnections(username: string): CustomWebSocket[];
+  storeClientConnection(webSocket: CustomWebSocket): void;
   removeClientConnection(webSocket: CustomWebSocket): void;
   getConnections(): Map<string, CustomWebSocket>;
 }

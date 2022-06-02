@@ -24,10 +24,22 @@ export class WebSocketHelper {
     jsonMessage: any,
     webSocket: CustomWebSocket
   ): Promise<void> {
-    global.logger.info(`received message from client with id: ${webSocket.id}`);
-    global.logger.debug(jsonMessage);
+    global.logger.info(`message received: ${jsonMessage}`);
     try {
       const message: BaseSignalingMessage = JSON.parse(jsonMessage);
+      switch (message.type) {
+        case SignalingMessageType.REGISTER:
+          this.handleClientRegister(message, webSocket);
+          break;
+
+        case SignalingMessageType.DEREGISTER:
+          this.handleClientDeRegister(message, webSocket);
+          break;
+
+        default:
+          this.sendSocketMessage(message);
+          break;
+      }
     } catch (e) {
       global.logger.error(
         `error handling message from websocket connection with id: ${webSocket.id}`
@@ -44,34 +56,45 @@ export class WebSocketHelper {
     message: BaseSignalingMessage,
     webSocket: CustomWebSocket
   ): Promise<void> {
+    const username: string = message.from;
+
     // registeration acknowledgement for user
     const registerAck: RegisterAck = {
       type: SignalingMessageType.REGISTER,
       from: ServerConstants.THE_INSTASHARE_SERVER,
-      to: message.from,
+      to: username,
       success: false,
     };
 
     /**
      * check if the received username is unique using server context
      */
-    if (global.serverContext.hasUserContext(message.from)) {
-      global.logger.debug(`registeration failed for user: ${message.from}`);
+    if (global.serverContext.hasUserContext(username)) {
+      global.logger.info(`registeration failed for user: ${username}`);
       this.sendSocketMessage(registerAck);
       return;
     }
+    global.serverContext.storeClientConnection(webSocket);
+
+    webSocket.on("close", (code: number, reason: Buffer) => {
+      this.handleClientDisconnect(webSocket, username);
+    });
+
+    webSocket.on("error", (error: Error) => {
+      this.handleClientError(error, webSocket, username);
+    });
 
     /**
      * register the user on server and create a user context
      */
     const userContext: UserContext = {
-      username: message.from,
+      username,
       connectedAt: new Date(),
       connectionIds: [],
     };
 
     userContext.connectionIds.push(webSocket.id!);
-    global.serverContext.setUserContext(message.from, userContext);
+    global.serverContext.storeUserContext(username, userContext);
     registerAck.success = true;
     this.sendSocketMessage(registerAck);
   }
@@ -85,13 +108,12 @@ export class WebSocketHelper {
     message: BaseSignalingMessage,
     webSocket: CustomWebSocket
   ): Promise<void> {
-    if (global.serverContext.hasUserContext(message.from)) {
+    const username: string = message.from;
+    if (global.serverContext.hasUserContext(username)) {
       const serverContext: ServerContext = global.serverContext;
-      const userContext: UserContext = serverContext.getUserContext(
-        message.from
-      )!;
+      const userContext: UserContext = serverContext.getUserContext(username)!;
 
-      serverContext.removeUserContext(message.from);
+      serverContext.removeUserContext(username);
       const groups: string[] | undefined = userContext.groups;
 
       /**
@@ -99,11 +121,7 @@ export class WebSocketHelper {
        */
       if (groups && groups.length > 0) {
         groups.forEach((groupName) => {
-          serverContext.removeUserFromGroup(
-            webSocket.id!,
-            message.from,
-            groupName
-          );
+          serverContext.removeUserFromGroup(webSocket.id!, username, groupName);
         });
       }
     }
@@ -136,7 +154,7 @@ export class WebSocketHelper {
         message: message,
         type: IPCMessageType.BROADCAST_MESSAGE,
       };
-      process.send!(ipcMessage);
+      process.send!(JSON.stringify(ipcMessage));
     }
   }
 
@@ -158,28 +176,62 @@ export class WebSocketHelper {
             message,
             type: IPCMessageType.USER_MESSAGE,
           };
-          process.send!(ipcMessage);
+
+          /**
+           * @TODO verify if stringify is really necessary
+           */
+          process.send!(JSON.stringify(ipcMessage));
         } else {
           global.serverContext
             .getUserConnections(recipient)
-            ?.forEach((webSocket) => webSocket.send(message));
+            .forEach((webSocket) => webSocket.send(JSON.stringify(message)));
         }
       });
     } else {
       // send message to single recipient
       global.serverContext
         .getUserConnections(message.to)
-        ?.forEach((webSocket) => webSocket.send(message));
+        .forEach((webSocket) => webSocket.send(JSON.stringify(message)));
     }
   }
 
   /**
    * handle websocket client disconnect
-   * @param webSocket 
+   * @param webSocket
    */
-  async handleClientDisconnect(webSocket: CustomWebSocket): Promise<void> {
-    global.logger.info(
-      `websocket connection with id: ${webSocket.id} is closed`
+  async handleClientDisconnect(
+    webSocket: CustomWebSocket,
+    username: string
+  ): Promise<void> {
+    await this.handleClientDeRegister(
+      {
+        from: username,
+        to: ServerConstants.THE_INSTASHARE_SERVER,
+        type: SignalingMessageType.DEREGISTER,
+      },
+      webSocket
     );
+    global.serverContext.removeClientConnection(webSocket);
+  }
+
+  /**
+   * handle error on websocket connection
+   * @param error
+   * @param webSocket
+   */
+  async handleClientError(
+    error: Error,
+    webSocket: CustomWebSocket,
+    username: string
+  ): Promise<void> {
+    await this.handleClientDeRegister(
+      {
+        from: username,
+        to: ServerConstants.THE_INSTASHARE_SERVER,
+        type: SignalingMessageType.DEREGISTER,
+      },
+      webSocket
+    );
+    global.serverContext.removeClientConnection(webSocket);
   }
 }
