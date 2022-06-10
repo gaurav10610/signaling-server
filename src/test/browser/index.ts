@@ -12,7 +12,6 @@ class BrowserTest {
     let server: express.Express = express();
     server.use(express.static(path));
     server.get("*", function (req, res) {
-      console.log(path);
       res.sendFile(path + "/index.html");
     });
 
