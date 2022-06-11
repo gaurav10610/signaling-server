@@ -4,11 +4,16 @@ import { ConnectAck, SignalingMessageType } from "../../types/message";
 import { ServerConstants } from "../../utils/ServerConstants";
 import { UserService } from "../helper/ws-helper";
 import { CommonUtils } from "../../utils/common-utils";
+import { inject, singleton } from "tsyringe";
+import { SimpleLogger } from "../../logging/logger-impl";
+
+@singleton()
 export class WsClientHandler {
-  private wsHelper: UserService;
-  constructor(wsHelper: UserService) {
-    global.logger.info(`websocket client handler initialized!`);
-    this.wsHelper = wsHelper;
+  constructor(
+    @inject("logger") private logger: SimpleLogger,
+    @inject("userService") private userService: UserService
+  ) {
+    this.logger.info(`websocket client handler initialized!`);
   }
 
   /**
@@ -21,19 +26,19 @@ export class WsClientHandler {
     webSocket.id = CommonUtils.generateUniqueId();
     this.handleConnectionOpen(webSocket);
     webSocket.on("message", (message: any) => {
-      this.wsHelper.handleClientMessage(message, webSocket);
+      this.userService.handleClientMessage(message, webSocket);
     });
 
     // handler for logging only
     webSocket.on("close", (code: number, reason: Buffer) => {
-      global.logger.info(
+      this.logger.info(
         `websocket connection with id: ${webSocket.id} is closed`
       );
     });
 
     // handler for logging only
     webSocket.on("error", (error: Error) => {
-      global.logger.info(
+      this.logger.info(
         `error occured on websocket connection with id: ${webSocket.id} & reason: ${error.message}`
       );
     });

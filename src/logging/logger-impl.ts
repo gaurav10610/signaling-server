@@ -1,52 +1,41 @@
 import { createLogger, Logger, LoggerOptions, transports } from "winston";
 import * as Transport from "winston-transport";
 import * as logform from "logform";
+import { singleton } from "tsyringe";
 
+@singleton()
 export class SimpleLogger {
   private logger: Logger;
 
-  constructor(options?: LoggerOptions) {
-    if (options) {
-      this.logger = createLogger(options);
+  constructor() {
+    const transportsConfig: Transport[] = [];
+    if (process.env.NODE_ENV === undefined || process.env.NODE_ENV === "dev") {
+      transportsConfig.push(new transports.Console());
     } else {
-      const transportsConfig: Transport[] = [];
-      if (
-        process.env.NODE_ENV === undefined ||
-        process.env.NODE_ENV === "dev"
-      ) {
-        transportsConfig.push(new transports.Console());
-      } else {
-        transportsConfig.push(
-          new transports.File({
-            filename: process.env.LOG_FILE_PATH
-              ? process.env.LOG_FILE_PATH
-              : "logs/signaling-server.log",
-          })
-        );
-      }
-      const loggerOptions: LoggerOptions = {
-        transports: transportsConfig,
-        format: logform.format.combine(
-          logform.format.label({
-            label: process.env.SERVICE_NAME
-              ? process.env.SERVICE_NAME
-              : "signaling-server",
-          }),
-          logform.format.timestamp({ format: "MMM-DD-YYYY HH:mm:ss" }),
-          logform.format.printf(
-            (info) =>
-              `${info.level}: ${info.label}: ${[info.timestamp]}: ${
-                info.message
-              }`
-          )
-        ),
-      };
-      this.logger = createLogger(loggerOptions);
+      transportsConfig.push(
+        new transports.File({
+          filename: process.env.LOG_FILE_PATH
+            ? process.env.LOG_FILE_PATH
+            : "logs/signaling-server.log",
+        })
+      );
     }
-  }
-
-  getLogger(): Logger {
-    return this.logger;
+    const loggerOptions: LoggerOptions = {
+      transports: transportsConfig,
+      format: logform.format.combine(
+        logform.format.label({
+          label: process.env.SERVICE_NAME
+            ? process.env.SERVICE_NAME
+            : "signaling-server",
+        }),
+        logform.format.timestamp({ format: "MMM-DD-YYYY HH:mm:ss" }),
+        logform.format.printf(
+          (info) =>
+            `${info.level}: ${info.label}: ${[info.timestamp]}: ${info.message}`
+        )
+      ),
+    };
+    this.logger = createLogger(loggerOptions);
   }
 
   error(message: string) {

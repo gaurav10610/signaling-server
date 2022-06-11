@@ -4,7 +4,7 @@
   "description": "a signaling server primarily for webrtc use-case",
   "main": "index.js",
   "scripts": {
-    "start": "npx ts-node src/main.ts",
+    "start": "nodemon",
     "compile": "npx tsc",
     "js:run": "NODE_ENV=dev nodemon dist/main.js",
     "compile:run": "npm run compile && NODE_ENV=dev nodemon dist/main.js",

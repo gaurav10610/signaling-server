@@ -9,10 +9,16 @@ import { ServerContext, UserContext } from "../../types/user-context";
 import { CustomWebSocket } from "../../types/websocket";
 import { ServerConstants } from "../../utils/ServerConstants";
 import cluster from "cluster";
+import { SimpleLogger } from "../../logging/logger-impl";
+import { inject, singleton } from "tsyringe";
 
+@singleton()
 export class UserService {
-  constructor() {
-    global.logger.info(`websocket helper initialiazed!`);
+  constructor(
+    @inject("logger") private logger: SimpleLogger,
+    @inject("serverContext") private serverContext: ServerContext
+  ) {
+    this.logger.info(`websocket helper initialiazed!`);
   }
 
   /**
@@ -24,7 +30,7 @@ export class UserService {
     jsonMessage: any,
     webSocket: CustomWebSocket
   ): Promise<void> {
-    global.logger.info(`message received: ${jsonMessage}`);
+    this.logger.info(`message received: ${jsonMessage}`);
     try {
       const message: BaseSignalingMessage = JSON.parse(jsonMessage);
       switch (message.type) {
@@ -41,7 +47,7 @@ export class UserService {
           break;
       }
     } catch (e) {
-      global.logger.error(
+      this.logger.error(
         `error handling message from websocket connection with id: ${webSocket.id}`
       );
     }
@@ -69,12 +75,12 @@ export class UserService {
     /**
      * check if the received username is unique using server context
      */
-    if (global.serverContext.hasUserContext(username)) {
-      global.logger.info(`registeration failed for user: ${username}`);
+    if (this.serverContext.hasUserContext(username)) {
+      this.logger.info(`registeration failed for user: ${username}`);
       this.sendSocketMessage(registerAck);
       return;
     }
-    global.serverContext.storeClientConnection(webSocket);
+    this.serverContext.storeClientConnection(webSocket);
 
     webSocket.on("close", (code: number, reason: Buffer) => {
       this.handleClientDisconnect(webSocket, username);
@@ -94,7 +100,7 @@ export class UserService {
     };
 
     userContext.connectionIds.push(webSocket.id!);
-    global.serverContext.storeUserContext(username, userContext);
+    this.serverContext.storeUserContext(username, userContext);
     registerAck.success = true;
     this.sendSocketMessage(registerAck);
   }
@@ -109,11 +115,11 @@ export class UserService {
     webSocket: CustomWebSocket
   ): Promise<void> {
     const username: string = message.from;
-    if (global.serverContext.hasUserContext(username)) {
-      const serverContext: ServerContext = global.serverContext;
-      const userContext: UserContext = serverContext.getUserContext(username)!;
+    if (this.serverContext.hasUserContext(username)) {
+      const userContext: UserContext =
+        this.serverContext.getUserContext(username)!;
 
-      serverContext.removeUserContext(username);
+      this.serverContext.removeUserContext(username);
       const groups: string[] | undefined = userContext.groups;
 
       /**
@@ -121,7 +127,11 @@ export class UserService {
        */
       if (groups && groups.length > 0) {
         groups.forEach((groupName) => {
-          serverContext.removeUserFromGroup(webSocket.id!, username, groupName);
+          this.serverContext.removeUserFromGroup(
+            webSocket.id!,
+            username,
+            groupName
+          );
         });
       }
     }
@@ -132,13 +142,13 @@ export class UserService {
    * @param message message payload that needs to be sent
    */
   async broadCastMessage(message: BaseSignalingMessage): Promise<void> {
-    global.serverContext
+    this.serverContext
       .getConnections()
       .forEach((socketConnection, connectionId) => {
         try {
           socketConnection.send(JSON.stringify(message));
         } catch (e) {
-          global.logger.error(
+          this.logger.error(
             `unable to send broadcast message to: ${connectionId}`
           );
         }
@@ -170,7 +180,7 @@ export class UserService {
          * of this server then there might be a case that, the recipient is connected
          * to some other server process
          */
-        if (cluster.worker && !global.serverContext.hasUserContext(recipient)) {
+        if (cluster.worker && !this.serverContext.hasUserContext(recipient)) {
           message.to = recipient;
           const ipcMessage: IPCMessage = {
             message,
@@ -182,14 +192,14 @@ export class UserService {
            */
           process.send!(JSON.stringify(ipcMessage));
         } else {
-          global.serverContext
+          this.serverContext
             .getUserConnections(recipient)
             .forEach((webSocket) => webSocket.send(JSON.stringify(message)));
         }
       });
     } else {
       // send message to single recipient
-      global.serverContext
+      this.serverContext
         .getUserConnections(message.to)
         .forEach((webSocket) => webSocket.send(JSON.stringify(message)));
     }
@@ -211,7 +221,7 @@ export class UserService {
       },
       webSocket
     );
-    global.serverContext.removeClientConnection(webSocket);
+    this.serverContext.removeClientConnection(webSocket);
   }
 
   /**
@@ -232,6 +242,6 @@ export class UserService {
       },
       webSocket
     );
-    global.serverContext.removeClientConnection(webSocket);
+    this.serverContext.removeClientConnection(webSocket);
   }
 }

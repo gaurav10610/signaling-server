@@ -1,13 +1,16 @@
 import "reflect-metadata";
+import { container } from "tsyringe";
+import "./ioc/ioc-container-config";
+import { SimpleLogger } from "./logging/logger-impl";
 import { WorkerServer } from "./worker";
 
 export async function init(): Promise<void> {
-  const serverConfig: any = {};
-  const workerServer: WorkerServer = new WorkerServer(serverConfig);
+  const workerServer: WorkerServer = container.resolve(WorkerServer);
   await workerServer.init();
 }
 
 init().then(() => {
-  global.logger.info(`instashare server has been started successfully`);
-  global.logger.info(`${process.env.NODE_ENV} profile is active`);
+  const logger: SimpleLogger = container.resolve<SimpleLogger>("logger");
+  logger.info(`instashare server has been started successfully!`);
+  logger.info(`${process.env.NODE_ENV} profile is active`);
 });

@@ -1,3 +1,5 @@
+import { inject, singleton } from "tsyringe";
+import { SimpleLogger } from "../logging/logger-impl";
 import {
   GroupContext,
   GroupUser,
@@ -6,6 +8,7 @@ import {
 } from "../types/user-context";
 import { CustomWebSocket } from "../types/websocket";
 
+@singleton()
 export class InMemoryServerContext implements ServerContext {
   /**
    * stores user context in following manner
@@ -31,7 +34,7 @@ export class InMemoryServerContext implements ServerContext {
    */
   private clientConnections: Map<string, CustomWebSocket>;
 
-  constructor() {
+  constructor(@inject("logger") private logger: SimpleLogger) {
     this.usersContext = new Map<string, UserContext>();
     this.groupsContext = new Map<string, GroupContext>();
     this.clientConnections = new Map<string, CustomWebSocket>();
@@ -42,7 +45,7 @@ export class InMemoryServerContext implements ServerContext {
    * @param username
    */
   removeUserContext(username: string): void {
-    global.logger.info(
+    this.logger.info(
       `user with username ${username} has been removed from context`
     );
     this.usersContext.delete(username);
@@ -204,7 +207,7 @@ export class InMemoryServerContext implements ServerContext {
    * @param webSocket
    */
   storeClientConnection(webSocket: CustomWebSocket): void {
-    global.logger.info(
+    this.logger.info(
       `new client connected with connection id: ${webSocket.id}`
     );
     this.clientConnections.set(webSocket.id!, webSocket);
@@ -216,7 +219,7 @@ export class InMemoryServerContext implements ServerContext {
    */
   removeClientConnection(webSocket: CustomWebSocket): void {
     if (webSocket.id) {
-      global.logger.info(
+      this.logger.info(
         `connection with id: ${webSocket.id} has been removed from context`
       );
       this.clientConnections.delete(webSocket.id);
