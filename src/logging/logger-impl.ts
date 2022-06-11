@@ -48,4 +48,16 @@ export class SimpleLogger {
   getLogger(): Logger {
     return this.logger;
   }
+
+  error(message: string) {
+    this.logger.error(message);
+  }
+
+  info(message: string) {
+    this.logger.info(message);
+  }
+
+  debug(message: string) {
+    this.logger.debug(message);
+  }
 }

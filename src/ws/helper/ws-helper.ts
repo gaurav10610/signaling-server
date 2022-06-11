@@ -10,7 +10,7 @@ import { CustomWebSocket } from "../../types/websocket";
 import { ServerConstants } from "../../utils/ServerConstants";
 import cluster from "cluster";
 
-export class WebSocketHelper {
+export class UserService {
   constructor() {
     global.logger.info(`websocket helper initialiazed!`);
   }

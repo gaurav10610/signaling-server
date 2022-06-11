@@ -4,7 +4,7 @@ import { SimpleLogger } from "./logging/logger-impl";
 import { CustomWebSocket } from "./types/websocket";
 import { ServerConstants } from "./utils/ServerConstants";
 import { WsClientHandler } from "./ws/client/ws-client";
-import { WebSocketHelper } from "./ws/helper/ws-helper";
+import { UserService } from "./ws/helper/ws-helper";
 import { WsServer } from "./ws/server/ws-server";
 
 export class WorkerServer {
@@ -28,13 +28,8 @@ export class WorkerServer {
 
     // websocket server initialization
     const wsServer: WsServer = new WsServer(
-      new WsClientHandler(new WebSocketHelper()),
-      options,
-      () => {
-        global.logger.info(
-          `web socket server started at port: ${ServerConstants.WS_PORT}`
-        );
-      }
+      new WsClientHandler(new UserService()),
+      options
     );
 
     wsServer.registerWsEventHandlers();

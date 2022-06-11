@@ -2,11 +2,11 @@ import { IncomingMessage } from "http";
 import { CustomWebSocket } from "../../types/websocket";
 import { ConnectAck, SignalingMessageType } from "../../types/message";
 import { ServerConstants } from "../../utils/ServerConstants";
-import { WebSocketHelper } from "../helper/ws-helper";
+import { UserService } from "../helper/ws-helper";
 import { CommonUtils } from "../../utils/common-utils";
 export class WsClientHandler {
-  private wsHelper: WebSocketHelper;
-  constructor(wsHelper: WebSocketHelper) {
+  private wsHelper: UserService;
+  constructor(wsHelper: UserService) {
     global.logger.info(`websocket client handler initialized!`);
     this.wsHelper = wsHelper;
   }

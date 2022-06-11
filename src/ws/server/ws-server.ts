@@ -1,16 +1,17 @@
 import { ServerOptions, WebSocketServer } from "ws";
+import { ServerConstants } from "../../utils/ServerConstants";
 import { WsClientHandler } from "../client/ws-client";
 
 export class WsServer {
   private server: WebSocketServer;
   private clientHandler: WsClientHandler;
 
-  constructor(
-    wsClientHandler: WsClientHandler,
-    options: ServerOptions,
-    callback: (() => void) | undefined
-  ) {
-    this.server = new WebSocketServer(options, callback);
+  constructor(wsClientHandler: WsClientHandler, options: ServerOptions) {
+    this.server = new WebSocketServer(options, () => {
+      global.logger.info(
+        `web socket server started at port: ${ServerConstants.WS_PORT}`
+      );
+    });
     this.clientHandler = wsClientHandler;
   }
 

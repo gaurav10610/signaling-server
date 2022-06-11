@@ -1,3 +1,4 @@
+import "reflect-metadata";
 import { WorkerServer } from "./worker";
 
 export async function init(): Promise<void> {
