@@ -13,7 +13,7 @@ export class WsServer {
     @inject("wsServerConfig") private options: ServerOptions
   ) {}
 
-  init() {
+  async init(): Promise<void> {
     this.server = new WebSocketServer(this.options, () => {
       this.logger.info(
         `web socket server started at port: ${ServerConstants.WS_PORT}`
@@ -25,7 +25,7 @@ export class WsServer {
   /**
    * register server event handlers
    */
-  registerWsEventHandlers() {
+  async registerWsEventHandlers(): Promise<void> {
     this.server!.on("close", this.onServerClose.bind(this));
     this.server!.on(
       "connection",

@@ -1,6 +1,10 @@
+import dotenv from "dotenv";
+dotenv.config({
+  path: `./environment/${process.env.NODE_ENV}/variables.env`,
+});
 import "reflect-metadata";
 import { container } from "tsyringe";
-import "./ioc/ioc-container-config";
+import "./ioc/worker/ioc-container-config";
 import { SimpleLogger } from "./logging/logger-impl";
 import { WorkerServer } from "./worker";
 

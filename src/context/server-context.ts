@@ -5,7 +5,7 @@ import {
   GroupUser,
   ServerContext,
   UserContext,
-} from "../types/user-context";
+} from "../types/context";
 import { CustomWebSocket } from "../types/websocket";
 
 @singleton()
@@ -118,6 +118,7 @@ export class InMemoryServerContext implements ServerContext {
    * @param groupContext
    */
   storeGroupContext(groupName: string, groupContext: GroupContext): void {
+    this.logger.info(`added group context of group with name: ${groupName}`);
     this.groupsContext.set(groupName, groupContext);
   }
 
@@ -126,6 +127,7 @@ export class InMemoryServerContext implements ServerContext {
    * @param groupName
    */
   removeGroupContext(groupName: string): void {
+    this.logger.info(`removed group context of group with name: ${groupName}`);
     this.groupsContext.delete(groupName);
   }
 

@@ -5,7 +5,7 @@ import {
   RegisterAck,
   SignalingMessageType,
 } from "../../types/message";
-import { ServerContext, UserContext } from "../../types/user-context";
+import { ServerContext, UserContext } from "../../types/context";
 import { CustomWebSocket } from "../../types/websocket";
 import { ServerConstants } from "../../utils/ServerConstants";
 import cluster from "cluster";
@@ -22,6 +22,11 @@ export class UserServiceImpl implements UserService {
     this.logger.info(`websocket helper initialiazed!`);
   }
 
+  /**
+   * handle message received from a client
+   * @param jsonMessage
+   * @param webSocket
+   */
   async handleClientMessage(
     jsonMessage: any,
     webSocket: CustomWebSocket
@@ -49,6 +54,11 @@ export class UserServiceImpl implements UserService {
     }
   }
 
+  /**
+   * handle user registeration on signaling server
+   * @param message received message on server
+   * @param webSocket websocket client connection
+   */
   async handleClientRegister(
     message: BaseSignalingMessage,
     webSocket: CustomWebSocket
@@ -96,6 +106,11 @@ export class UserServiceImpl implements UserService {
     this.sendSocketMessage(registerAck);
   }
 
+  /**
+   * handle user de-regiter on signaling-server
+   * @param message received message on server
+   * @param webSocket websocket client connection
+   */
   async handleClientDeRegister(
     message: BaseSignalingMessage,
     webSocket: CustomWebSocket
@@ -123,6 +138,10 @@ export class UserServiceImpl implements UserService {
     }
   }
 
+  /**
+   * broadcast the specified message to all the clients
+   * @param message message payload that needs to be sent
+   */
   async broadCastMessage(message: BaseSignalingMessage): Promise<void> {
     this.serverContext
       .getConnections()
@@ -145,11 +164,16 @@ export class UserServiceImpl implements UserService {
       const ipcMessage: IPCMessage = {
         message: message,
         type: IPCMessageType.BROADCAST_MESSAGE,
+        processId: process.pid,
       };
       process.send!(JSON.stringify(ipcMessage));
     }
   }
 
+  /**
+   * send a message to appropriate user/users
+   * @param message
+   */
   async sendSocketMessage(message: BaseSignalingMessage): Promise<void> {
     if (message.to instanceof Array) {
       message.to.forEach((recipient) => {
@@ -163,6 +187,7 @@ export class UserServiceImpl implements UserService {
           const ipcMessage: IPCMessage = {
             message,
             type: IPCMessageType.USER_MESSAGE,
+            processId: process.pid,
           };
 
           /**
@@ -183,6 +208,10 @@ export class UserServiceImpl implements UserService {
     }
   }
 
+  /**
+   * handle websocket client disconnect
+   * @param webSocket
+   */
   async handleClientDisconnect(
     webSocket: CustomWebSocket,
     username: string
@@ -198,6 +227,11 @@ export class UserServiceImpl implements UserService {
     this.serverContext.removeClientConnection(webSocket);
   }
 
+  /**
+   * handle error on websocket connection
+   * @param error
+   * @param webSocket
+   */
   async handleClientError(
     error: Error,
     webSocket: CustomWebSocket,

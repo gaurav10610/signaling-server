@@ -16,14 +16,16 @@ export enum SignalingMessageType {
 }
 
 export enum IPCMessageType {
-  USER_STATUS,
+  REGISTER,
+  DEREGISTER,
   BROADCAST_MESSAGE,
   USER_MESSAGE,
 }
 
 export interface IPCMessage {
   type: IPCMessageType;
-  message: BaseSignalingMessage;
+  message: any;
+  processId: number;
 }
 
 export interface RegisterAck extends BaseSignalingMessage {

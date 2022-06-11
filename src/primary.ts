@@ -1,24 +1,30 @@
-import cluster from "cluster";
+import { Worker } from "cluster";
 import { inject, singleton } from "tsyringe";
 import { SimpleLogger } from "./logging/logger-impl";
 import { GroupContext, ServerContext } from "./types/context";
 import { IPCMessage, IPCMessageType } from "./types/message";
 import { CommonUtils } from "./utils/common-utils";
 import { ServerConstants } from "./utils/ServerConstants";
-import { WsServer } from "./ws/server/ws-server";
 
 @singleton()
-export class WorkerServer {
+export class MasterServer {
+  private workers: Worker[] = [];
   constructor(
     @inject("serverConfig") serverConfig: any,
     @inject("logger") private logger: SimpleLogger,
-    @inject("wsServer") private wsServer: WsServer,
     @inject("serverContext") private serverContext: ServerContext
   ) {
-    this.logger.info(`initializaing worker server instance!`);
+    this.logger.info(`initializing master server instance!`);
+  }
+
+  setWorkers(workers: Worker[]) {
+    this.workers.push(...workers);
   }
 
   async init(): Promise<void> {
+    /**
+     * create group context for groups
+     */
     ServerConstants.DEFAULT_GROUPS.forEach((groupName) => {
       const groupContext: GroupContext = {
         id: CommonUtils.generateUniqueId(),
@@ -28,36 +34,36 @@ export class WorkerServer {
       };
       this.serverContext.storeGroupContext(groupName, groupContext);
     });
-    await this.wsServer.init();
 
-    if (cluster.isWorker) {
-      cluster.worker!.on("message", (message: IPCMessage) => {
+    /**
+     * register ipc message listeners on worker processes
+     */
+    this.workers.forEach((worker) => {
+      worker.on("message", (message: IPCMessage) => {
         this.logger.info(
-          `ipc message received on worker of type: ${message.type}`
+          `ipc message received on master of type: ${message.type}`
         );
         this.logger.debug(
-          `ipc message received on worker: ${JSON.stringify(message)}`
+          `ipc message received on master: ${JSON.stringify(message)}`
         );
 
-        try {
-          switch (message.type) {
-            case IPCMessageType.REGISTER:
-              break;
+        switch (message.type) {
+          case IPCMessageType.REGISTER:
+            break;
 
-            case IPCMessageType.USER_MESSAGE:
-              break;
+          case IPCMessageType.DEREGISTER:
+            break;
 
-            case IPCMessageType.BROADCAST_MESSAGE:
-              break;
+          case IPCMessageType.USER_MESSAGE:
+            break;
 
-            default: // do nothing here
-          }
-        } catch (error) {
-          this.logger.error(
-            `error occured while handling message on worker process with id: ${process.pid}`
-          );
+          case IPCMessageType.BROADCAST_MESSAGE:
+            break;
+
+          default:
+          // do nothing here
         }
       });
-    }
+    });
   }
 }

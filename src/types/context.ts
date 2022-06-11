@@ -5,6 +5,7 @@ export interface UserContext {
   connectionIds: string[]; // unique ids of connections
   groups?: string[];
   connectedAt: Date;
+  workerProcessId?: number; // used by primary process only  
 }
 
 export interface GroupContext {
