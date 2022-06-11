@@ -11,9 +11,10 @@ import { ServerConstants } from "../../utils/ServerConstants";
 import cluster from "cluster";
 import { SimpleLogger } from "../../logging/logger-impl";
 import { inject, singleton } from "tsyringe";
+import { UserService } from "../user-spec";
 
 @singleton()
-export class UserService {
+export class UserServiceImpl implements UserService {
   constructor(
     @inject("logger") private logger: SimpleLogger,
     @inject("serverContext") private serverContext: ServerContext
@@ -21,11 +22,6 @@ export class UserService {
     this.logger.info(`websocket helper initialiazed!`);
   }
 
-  /**
-   * handle message received from a client
-   * @param jsonMessage
-   * @param webSocket
-   */
   async handleClientMessage(
     jsonMessage: any,
     webSocket: CustomWebSocket
@@ -53,11 +49,6 @@ export class UserService {
     }
   }
 
-  /**
-   * handle user registeration on signaling server
-   * @param message received message on server
-   * @param webSocket websocket client connection
-   */
   async handleClientRegister(
     message: BaseSignalingMessage,
     webSocket: CustomWebSocket
@@ -105,11 +96,6 @@ export class UserService {
     this.sendSocketMessage(registerAck);
   }
 
-  /**
-   * handle user de-regiter on signaling-server
-   * @param message received message on server
-   * @param webSocket websocket client connection
-   */
   async handleClientDeRegister(
     message: BaseSignalingMessage,
     webSocket: CustomWebSocket
@@ -137,10 +123,6 @@ export class UserService {
     }
   }
 
-  /**
-   * broadcast the specified message to all the clients
-   * @param message message payload that needs to be sent
-   */
   async broadCastMessage(message: BaseSignalingMessage): Promise<void> {
     this.serverContext
       .getConnections()
@@ -168,10 +150,6 @@ export class UserService {
     }
   }
 
-  /**
-   * send a message to appropriate user/users
-   * @param message
-   */
   async sendSocketMessage(message: BaseSignalingMessage): Promise<void> {
     if (message.to instanceof Array) {
       message.to.forEach((recipient) => {
@@ -205,10 +183,6 @@ export class UserService {
     }
   }
 
-  /**
-   * handle websocket client disconnect
-   * @param webSocket
-   */
   async handleClientDisconnect(
     webSocket: CustomWebSocket,
     username: string
@@ -224,11 +198,6 @@ export class UserService {
     this.serverContext.removeClientConnection(webSocket);
   }
 
-  /**
-   * handle error on websocket connection
-   * @param error
-   * @param webSocket
-   */
   async handleClientError(
     error: Error,
     webSocket: CustomWebSocket,

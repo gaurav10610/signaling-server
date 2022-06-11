@@ -2,10 +2,10 @@ import { IncomingMessage } from "http";
 import { CustomWebSocket } from "../../types/websocket";
 import { ConnectAck, SignalingMessageType } from "../../types/message";
 import { ServerConstants } from "../../utils/ServerConstants";
-import { UserService } from "../helper/ws-helper";
 import { CommonUtils } from "../../utils/common-utils";
 import { inject, singleton } from "tsyringe";
 import { SimpleLogger } from "../../logging/logger-impl";
+import { UserService } from "../../service/user-spec";
 
 @singleton()
 export class WsClientHandler {
