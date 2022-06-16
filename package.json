@@ -4,10 +4,10 @@
   "description": "a signaling server primarily for webrtc use-case",
   "main": "index.js",
   "scripts": {
-    "start": "nodemon",
+    "start": "nodemon --watch src --ext ts,json --exec \"npm run compile && npm run js:artifacts\"",
+    "start:prod": "NODE_ENV=production nodemon dist/main.js",
     "compile": "npx tsc",
-    "js:run": "NODE_ENV=dev nodemon dist/main.js",
-    "compile:run": "npm run compile && NODE_ENV=dev nodemon dist/main.js",
+    "js:artifacts": "SET NODE_ENV=dev && node dist/main.js",
     "lint": "npx eslint . --fix",
     "test": "echo \"Error: no test specified\" && exit 1",
     "browser:test": "node dist/test/browser/index.js"
@@ -25,10 +25,6 @@
   "author": "gaurav10610@gmail.com",
   "license": "MIT",
   "dependencies": {
-    "@types/express": "^4.17.13",
-    "@types/node": "^17.0.42",
-    "@types/uuid": "^8.3.4",
-    "@types/ws": "^8.5.3",
     "dotenv": "^16.0.1",
     "express": "^4.18.0",
     "reflect-metadata": "^0.1.13",
@@ -38,6 +34,10 @@
     "ws": "^8.6.0"
   },
   "devDependencies": {
+    "@types/express": "^4.17.13",
+    "@types/uuid": "^8.3.4",
+    "@types/ws": "^8.5.3",
+    "@types/node": "^17.0.42",
     "@tsconfig/node16": "^1.0.2",
     "@typescript-eslint/eslint-plugin": "^5.21.0",
     "@typescript-eslint/parser": "^5.21.0",

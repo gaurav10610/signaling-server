@@ -2,5 +2,5 @@
   "watch": ["src"],
   "ext": "ts,json",
   "ignore": ["src/**/*.spec.ts"],
-  "exec": "SET NODE_ENV=dev && npx ts-node src/main.ts"
+  "exec": "npm run compile && npm run js:artifacts"
 }
