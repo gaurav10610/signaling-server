@@ -58,7 +58,7 @@ export class SignalingApiServer {
           .createServer(this.serverOptions, this.app)
           .listen(ServerConstants.API_SERVER_PORT, () => {
             this.logger.info(
-              `api server started on port: ${ServerConstants.API_SERVER_PORT}`
+              `secured api server started on port: ${ServerConstants.API_SERVER_PORT}`
             );
           });
       } else {
@@ -81,15 +81,19 @@ export class SignalingApiServer {
    */
   async registerApis(app: Express.Application): Promise<void> {
     app.get(
-      `${ServerConstants.API_BASE_URL}/status/:name`,
+      `${ServerConstants.API_BASE_URL}/user/status/:name`,
       this.apiService.getUserStatus.bind(this.apiService)
     );
     app.get(
       `${ServerConstants.API_BASE_URL}/users/active`,
       this.apiService.getActiveUsers.bind(this.apiService)
     );
+    app.get(
+      `${ServerConstants.API_BASE_URL}/groups/users/active`,
+      this.apiService.getActiveUsers.bind(this.apiService)
+    );
     app.post(
-      `${ServerConstants.API_BASE_URL}/groups/register`,
+      `${ServerConstants.API_BASE_URL}/group/register`,
       this.apiService.processGroupRegisteration.bind(this.apiService)
     );
   }

@@ -1,4 +1,5 @@
 import {
+  ActiveGroupUsersResponse,
   GetActiveUsersResponse,
   GetUserStatusResponse,
   GroupRegisterResponse,
@@ -7,20 +8,22 @@ import Express from "express";
 
 export interface ApiService {
   getUserStatus(
-    req: Express.Request,
-    res: Express.Response,
-    next: Express.NextFunction
+    request: Express.Request,
+    response: Express.Response
   ): Promise<GetUserStatusResponse>;
 
   getActiveUsers(
-    req: Express.Request,
-    res: Express.Response,
-    next: Express.NextFunction
+    request: Express.Request,
+    response: Express.Response
   ): Promise<GetActiveUsersResponse>;
 
+  getActiveGroupUsers(
+    request: Express.Request,
+    response: Express.Response
+  ): Promise<ActiveGroupUsersResponse>;
+
   processGroupRegisteration(
-    req: Express.Request,
-    res: Express.Response,
-    next: Express.NextFunction
+    request: Express.Request,
+    response: Express.Response
   ): Promise<GroupRegisterResponse>;
 }

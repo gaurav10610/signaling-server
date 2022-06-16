@@ -40,6 +40,10 @@ export class InMemoryServerContext implements ServerContext {
     this.clientConnections = new Map<string, CustomWebSocket>();
   }
 
+  getAllActiveUsers(): Map<string, UserContext> {
+    return this.usersContext;
+  }
+
   /**
    * removes the user context for the user with specied user name
    * @param username
@@ -93,6 +97,13 @@ export class InMemoryServerContext implements ServerContext {
    */
   hasGroupContext(groupName: string): boolean {
     return this.groupsContext.has(groupName);
+  }
+
+  /**
+   * get all the active groups along with users
+   */
+  getAllActiveGroupUsers(): Map<string, GroupContext> {
+   return this.groupsContext;
   }
 
   /**

@@ -5,7 +5,7 @@ export interface UserContext {
   connectionIds: string[]; // unique ids of connections
   groups?: string[];
   connectedAt: Date;
-  workerProcessId?: number; // used by primary process only  
+  workerProcessId?: number; // used by primary process only
 }
 
 export interface GroupContext {
@@ -25,10 +25,12 @@ export interface GroupUser {
 
 export interface ServerContext {
   hasUserContext(username: string): boolean;
+  getAllActiveUsers(): Map<string, UserContext>;
   getUserContext(username: string): UserContext | undefined;
   storeUserContext(username: string, userContext: UserContext): void;
   removeUserContext(username: string): void;
   hasGroupContext(groupName: string): boolean;
+  getAllActiveGroupUsers(): Map<string, GroupContext>;
   getGroupContext(groupName: string): GroupContext | undefined;
   storeGroupContext(groupName: string, groupContext: GroupContext): void;
   removeGroupContext(groupName: string): void;

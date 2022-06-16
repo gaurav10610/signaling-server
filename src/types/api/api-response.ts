@@ -1,15 +1,19 @@
+import { GroupContext } from "./../context";
 export interface GetUserStatusResponse {
   status: boolean;
 }
 
 export interface GetActiveGroupUsers {
-  groupName: string;
   users: string[]; // list of usernames for all the active users in a group
 }
 
 export interface GetActiveUsersResponse {
-  groups: GetActiveGroupUsers[]; // list of usernames for all the active users
+  groups: Map<string, GetActiveGroupUsers>; // list of usernames for all the active users
   nonGroupUsers: string[];
+}
+
+export interface ActiveGroupUsersResponse {
+  groups: Map<string, GroupContext>;
 }
 
 export interface GroupRegisterResponse {

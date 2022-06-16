@@ -21,8 +21,7 @@ export async function initPrimary(): Promise<void> {
   for (let i = 0; i < processCount; i++) {
     workers.push(cluster.fork({ ...process.env }));
   }
-  primaryServer.setWorkers(workers);
-  await primaryServer.init();
+  await primaryServer.init(workers);
 }
 
 export async function initWorker(): Promise<void> {

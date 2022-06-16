@@ -9,20 +9,18 @@ import { ServerConstants } from "./utils/ServerConstants";
 
 @singleton()
 export class PrimaryServer {
-  private workers: Worker[] = [];
+  private workers: Worker[];
   constructor(
     @inject("logger") private logger: SimpleLogger,
     @inject("serverContext") private serverContext: ServerContext,
     @inject("apiServer") private apiServer: SignalingApiServer
   ) {
     this.logger.info(`initializing master server instance!`);
+    this.workers = [];
   }
 
-  setWorkers(workers: Worker[]) {
+  async init(workers: Worker[]): Promise<void> {
     this.workers.push(...workers);
-  }
-
-  async init(): Promise<void> {
     /**
      * create group context for groups
      */
