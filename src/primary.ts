@@ -1,3 +1,4 @@
+import { SignalingApiServer } from "./rest/api-server";
 import { Worker } from "cluster";
 import { inject, singleton } from "tsyringe";
 import { SimpleLogger } from "./logging/logger-impl";
@@ -7,12 +8,12 @@ import { CommonUtils } from "./utils/common-utils";
 import { ServerConstants } from "./utils/ServerConstants";
 
 @singleton()
-export class MasterServer {
+export class PrimaryServer {
   private workers: Worker[] = [];
   constructor(
-    @inject("serverConfig") serverConfig: any,
     @inject("logger") private logger: SimpleLogger,
-    @inject("serverContext") private serverContext: ServerContext
+    @inject("serverContext") private serverContext: ServerContext,
+    @inject("apiServer") private apiServer: SignalingApiServer
   ) {
     this.logger.info(`initializing master server instance!`);
   }
@@ -34,6 +35,9 @@ export class MasterServer {
       };
       this.serverContext.storeGroupContext(groupName, groupContext);
     });
+
+    // configure & start api server
+    await this.apiServer.init();
 
     /**
      * register ipc message listeners on worker processes

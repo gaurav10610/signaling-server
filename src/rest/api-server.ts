@@ -23,14 +23,14 @@ export class SignalingApiServer {
       this.app.use(Express.json());
       this.app.use(Express.urlencoded({ extended: true }));
 
-      //To resolve CORS related issues
+      // to resolve CORS related issues
       this.app.use(function (
-        req: Express.Request,
-        res: Express.Response,
+        request: Express.Request,
+        response: Express.Response,
         next: Express.NextFunction
       ) {
-        res.header("Access-Control-Allow-Origin", "*");
-        res.header(
+        response.header("Access-Control-Allow-Origin", "*");
+        response.header(
           "Access-Control-Allow-Headers",
           "Origin, X-Requested-With, Content-Type, Accept"
         );
@@ -42,9 +42,9 @@ export class SignalingApiServer {
        */
       this.app.use(
         (
-          err: Express.Errback,
-          req: Express.Request,
-          res: Express.Response,
+          error: Express.Errback,
+          request: Express.Request,
+          respose: Express.Response,
           next: Express.NextFunction
         ) => {
           next();

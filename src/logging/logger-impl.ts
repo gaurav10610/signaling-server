@@ -2,6 +2,7 @@ import { createLogger, Logger, LoggerOptions, transports } from "winston";
 import * as Transport from "winston-transport";
 import * as logform from "logform";
 import { singleton } from "tsyringe";
+import cluster from "cluster";
 
 @singleton()
 export class SimpleLogger {
@@ -31,7 +32,9 @@ export class SimpleLogger {
         logform.format.timestamp({ format: "MMM-DD-YYYY HH:mm:ss" }),
         logform.format.printf(
           (info) =>
-            `${info.level}: ${info.label}: ${[info.timestamp]}: ${info.message}`
+            `${info.level}: ${info.label}: ${[info.timestamp]}: ${
+              cluster.isPrimary ? "primary" : "worker"
+            }: ${process.pid}: ${info.message}`
         )
       ),
     };
