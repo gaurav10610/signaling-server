@@ -1,4 +1,6 @@
-import { GroupContext, UserContext } from "./../../types/context";
+import { BaseSignalingServerException } from "./../../exception/handler";
+import { BaseSignalingMessage } from "./../../types/message";
+import { UserContext } from "./../../types/context";
 import { inject, singleton } from "tsyringe";
 import { SimpleLogger } from "../../logging/logger-impl";
 import {
@@ -8,10 +10,8 @@ import {
   ActiveGroupUsersResponse,
 } from "../../types/api/api-response";
 import { ApiService } from "../api-spec";
-import Express from "express";
 import { ServerContext } from "../../types/context";
-import { ParamsDictionary } from "express-serve-static-core";
-import { ParsedQs } from "qs";
+import { GroupRegisterRequest } from "../../types/api/api-request";
 
 @singleton()
 export class ApiServiceImpl implements ApiService {
@@ -24,31 +24,21 @@ export class ApiServiceImpl implements ApiService {
 
   /**
    * get active status of a single user
-   * @param request
-   * @param response
+   * @param username
    * @returns
    */
-  async getUserStatus(
-    request: Express.Request,
-    response: Express.Response
-  ): Promise<GetUserStatusResponse> {
-    const userStatusResponse: GetUserStatusResponse = {
-      status: this.serverContext.hasUserContext(request.params.name),
+  async getUserStatus(username: string): Promise<GetUserStatusResponse> {
+    const response: GetUserStatusResponse = {
+      status: this.serverContext.hasUserContext(username),
     };
-    return userStatusResponse;
+    return response;
   }
 
   /**
    * get all the active users grouped by group name
-   * @param request
-   * @param response
    */
-  async getActiveUsers(
-    request: Express.Request,
-    response: Express.Response
-  ): Promise<GetActiveUsersResponse> {
-    // respose object
-    const activeUsersResponse: GetActiveUsersResponse = {
+  async getActiveUsers(): Promise<GetActiveUsersResponse> {
+    const response: GetActiveUsersResponse = {
       groups: new Map(),
       nonGroupUsers: [],
     };
@@ -59,54 +49,49 @@ export class ApiServiceImpl implements ApiService {
         if (userContext.groups && userContext.groups.length > 0) {
           userContext.groups.forEach((groupName) => {
             // check if group context has already been initialized
-            if (!activeUsersResponse.groups.has(groupName)) {
-              activeUsersResponse.groups.set(groupName, {
+            if (!response.groups.has(groupName)) {
+              response.groups.set(groupName, {
                 users: [],
               });
             }
-            activeUsersResponse.groups.get(groupName)!.users.push(username);
+            response.groups.get(groupName)!.users.push(username);
           });
         } else {
-          activeUsersResponse.nonGroupUsers.push(username);
+          response.nonGroupUsers.push(username);
         }
       });
 
-    return activeUsersResponse;
+    return response;
   }
 
   /**
    * get all the active group users
-   * @param request
-   * @param response
+   * @param groupName
    */
   async getActiveGroupUsers(
-    request: Express.Request,
-    response: Express.Response
+    groupName: string
   ): Promise<ActiveGroupUsersResponse> {
-    const groupName: string = request.query.groupName
-      ? <string>request.query.groupName
-      : "";
-    const activeGroupUsers: ActiveGroupUsersResponse = {
+    const response: ActiveGroupUsersResponse = {
       groups: new Map(),
     };
-    if (
-      groupName.length > 0 &&
-      this.serverContext.hasGroupContext(groupName.trim())
-    ) {
-      activeGroupUsers.groups.set(
+    if (groupName.length > 0 && this.serverContext.hasGroupContext(groupName)) {
+      response.groups.set(
         groupName,
         this.serverContext.getGroupContext(groupName)!
       );
     } else {
-      activeGroupUsers.groups = this.serverContext.getAllActiveGroupUsers();
+      response.groups = this.serverContext.getAllActiveGroupUsers();
     }
-    return activeGroupUsers;
+    return response;
   }
 
+  /**
+   * handle group registeration
+   * @param groupRegisterRequest
+   */
   async processGroupRegisteration(
-    request: Express.Request,
-    response: Express.Response
+    groupRegisterRequest: GroupRegisterRequest
   ): Promise<GroupRegisterResponse> {
-    throw new Error("Method not implemented.");
+    throw new BaseSignalingServerException(500, "Method not implemented.");
   }
 }

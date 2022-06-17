@@ -4,26 +4,16 @@ import {
   GetUserStatusResponse,
   GroupRegisterResponse,
 } from "../types/api/api-response";
-import Express from "express";
+import { GroupRegisterRequest } from "../types/api/api-request";
 
 export interface ApiService {
-  getUserStatus(
-    request: Express.Request,
-    response: Express.Response
-  ): Promise<GetUserStatusResponse>;
+  getUserStatus(username: string): Promise<GetUserStatusResponse>;
 
-  getActiveUsers(
-    request: Express.Request,
-    response: Express.Response
-  ): Promise<GetActiveUsersResponse>;
+  getActiveUsers(): Promise<GetActiveUsersResponse>;
 
-  getActiveGroupUsers(
-    request: Express.Request,
-    response: Express.Response
-  ): Promise<ActiveGroupUsersResponse>;
+  getActiveGroupUsers(groupName: string): Promise<ActiveGroupUsersResponse>;
 
   processGroupRegisteration(
-    request: Express.Request,
-    response: Express.Response
+    groupRegisterRequest: GroupRegisterRequest
   ): Promise<GroupRegisterResponse>;
 }
