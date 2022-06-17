@@ -13,7 +13,6 @@ import {
   GroupRegisterResponse,
 } from "../types/api/api-response";
 import { GroupRegisterRequest } from "../types/api/api-request";
-import { CompleterResult } from "readline";
 import cors from "cors";
 
 @singleton()

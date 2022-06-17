@@ -1,5 +1,4 @@
 import { BaseSignalingServerException } from "./../../exception/handler";
-import { BaseSignalingMessage } from "./../../types/message";
 import { UserContext } from "./../../types/context";
 import { inject, singleton } from "tsyringe";
 import { SimpleLogger } from "../../logging/logger-impl";

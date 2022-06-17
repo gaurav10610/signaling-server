@@ -1,6 +1,6 @@
 import { container, Lifecycle } from "tsyringe";
 import { ServerOptions as HttpServerOptions } from "https";
-import { PathLike, readFileSync } from "fs";
+import { readFileSync } from "fs";
 import { SimpleLogger } from "../logging/logger-impl";
 import { InMemoryServerContext } from "../context/server-context";
 import { UserServiceImpl } from "../service/impl/user";
