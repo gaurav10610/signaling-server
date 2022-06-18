@@ -1,17 +1,25 @@
 import { IncomingMessage } from "http";
 import { CustomWebSocket } from "../../types/websocket";
-import { ConnectAck, SignalingMessageType } from "../../types/message";
+import {
+  BaseSignalingMessage,
+  ConnectAck,
+  GroupRegisterMessage,
+  SignalingMessageType,
+} from "../../types/message";
 import { ServerConstants } from "../../utils/ServerConstants";
 import { CommonUtils } from "../../utils/common-utils";
 import { inject, singleton } from "tsyringe";
 import { SimpleLogger } from "../../logging/logger-impl";
 import { UserService } from "../../service/user-spec";
+import { CommunicationService } from "../../types/communication";
 
 @singleton()
 export class WsClientHandler {
   constructor(
     @inject("logger") private logger: SimpleLogger,
-    @inject("userService") private userService: UserService
+    @inject("userService") private userService: UserService,
+    @inject("communicationService")
+    private communicationService: CommunicationService
   ) {
     this.logger.info(`websocket client handler initialized!`);
   }
@@ -26,7 +34,11 @@ export class WsClientHandler {
     webSocket.id = CommonUtils.generateUniqueId();
     this.handleConnectionOpen(webSocket);
     webSocket.on("message", (message: any) => {
-      this.userService.handleClientMessage(message, webSocket);
+      /**
+       * @TODO integrate authentication flow here
+       */
+
+      this.handleClientMessage(message, webSocket);
     });
 
     // handler for logging only
@@ -42,6 +54,39 @@ export class WsClientHandler {
         `error occured on websocket connection with id: ${webSocket.id} & reason: ${error.message}`
       );
     });
+  }
+
+  /**
+   * handle message received from a client
+   * @param jsonMessage
+   * @param webSocket
+   */
+  async handleClientMessage(
+    jsonMessage: any,
+    webSocket: CustomWebSocket
+  ): Promise<void> {
+    this.logger.info(`message received: ${jsonMessage}`);
+    try {
+      const message: BaseSignalingMessage = JSON.parse(jsonMessage);
+      message.isClientMessage = true;
+      switch (message.type) {
+        case SignalingMessageType.REGISTER:
+          this.userService.handleClientRegister(message, webSocket);
+          break;
+
+        case SignalingMessageType.DEREGISTER:
+          this.userService.handleClientDeRegister(message, webSocket);
+          break;
+
+        default:
+          this.communicationService.sendSocketMessage(message);
+          break;
+      }
+    } catch (e) {
+      this.logger.error(
+        `error handling message from websocket connection with id: ${webSocket.id}`
+      );
+    }
   }
 
   /**

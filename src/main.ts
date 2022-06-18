@@ -19,12 +19,16 @@ export async function initPrimary(): Promise<void> {
     ? parseInt(process.env.WORKERS_COUNT)
     : os.cpus().length;
   for (let i = 0; i < processCount; i++) {
-    workers.push(cluster.fork({ ...process.env }));
+    workers.push(cluster.fork({ ...process.env, SERVER_ID: i }));
   }
   await primaryServer.init(workers);
 }
 
 export async function initWorker(): Promise<void> {
+  const logger: SimpleLogger = container.resolve<SimpleLogger>("logger");
+  logger.info(
+    `starting an instance of worker server with server id: ${process.env.SERVER_ID}`
+  );
   const workerServer: WorkerServer = container.resolve(WorkerServer);
   await workerServer.init();
 }

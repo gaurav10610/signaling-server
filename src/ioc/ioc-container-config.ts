@@ -13,6 +13,7 @@ import { WsServer } from "../ws/server/ws-server";
 import { ServerOptions } from "ws";
 import { ApiExceptionHandler } from "../exception/handler";
 import cors from "cors";
+import { CommunicationServiceImpl } from "../service/impl/communication";
 
 container.register<any>("serverConfig", { useValue: {} });
 container.register("logger", SimpleLogger, { lifecycle: Lifecycle.Singleton });
@@ -54,6 +55,9 @@ if (cluster.isPrimary) {
 if (cluster.isWorker) {
   container.register<ServerOptions>("wsServerConfig", {
     useValue: WsServerConfig,
+  });
+  container.register("communicationService", CommunicationServiceImpl, {
+    lifecycle: Lifecycle.Singleton,
   });
   container.register("wsClientHandler", WsClientHandler, {
     lifecycle: Lifecycle.Singleton,

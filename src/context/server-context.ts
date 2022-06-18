@@ -1,8 +1,9 @@
 import { inject, singleton } from "tsyringe";
+import { BaseSignalingServerException } from "../exception/handler";
 import { SimpleLogger } from "../logging/logger-impl";
 import {
   GroupContext,
-  GroupUser,
+  GroupUserContext,
   ServerContext,
   UserContext,
 } from "../types/context";
@@ -103,7 +104,7 @@ export class InMemoryServerContext implements ServerContext {
    * get all the active groups along with users
    */
   getAllActiveGroupUsers(): Map<string, GroupContext> {
-   return this.groupsContext;
+    return this.groupsContext;
   }
 
   /**
@@ -144,57 +145,42 @@ export class InMemoryServerContext implements ServerContext {
 
   /**
    * add the specified user in the specified group
-   * @param webSocketId
    * @param username
    * @param groupName
    */
-  async addUserInGroup(
-    webSocketId: string,
-    username: string,
-    groupName: string
-  ): Promise<void> {
-    if (this.groupsContext.has(groupName)) {
-      const groupContext: GroupContext = this.groupsContext.get(groupName)!;
-
-      /**
-       * if user is not part of the specified group then add a new group user
-       */
-      if (!groupContext.users.has(webSocketId)) {
-        groupContext.users.set(webSocketId, {
-          joinedAt: new Date(),
-          username,
-          isActive: true,
-        });
-      }
+  addUserInGroup(username: string, groupName: string): void {
+    if (!this.hasGroupContext(groupName)) {
+      throw new BaseSignalingServerException(400, "group does not exist");
     }
-    throw Error(`${groupName} group does not exist!`);
+    const groupContext: GroupContext = this.getGroupContext(groupName)!;
+    if (groupContext.users.has(username)) {
+      throw new BaseSignalingServerException(
+        400,
+        "user with same name already exist in group"
+      );
+    }
+    groupContext.users.set(username, {
+      joinedAt: new Date(),
+    });
   }
 
   /**
    * removes the specified user from the specifed group
-   * @param webSocketId
    * @param username
    * @param groupName
    */
-  async removeUserFromGroup(
-    webSocketId: string,
-    username: string,
-    groupName: string
-  ): Promise<void> {
-    if (this.groupsContext.has(groupName)) {
-      const groupContext: GroupContext = this.groupsContext.get(groupName)!;
-
-      const groupUser: GroupUser | undefined =
-        groupContext.users.get(webSocketId);
-
-      /**
-       * check if group user exist then mark him/her as in-active
-       */
-      if (groupUser && groupUser.username === username) {
-        groupUser.leftAt = new Date();
-        groupUser.isActive = false;
-      }
+  removeUserFromGroup(username: string, groupName: string): void {
+    if (!this.hasGroupContext(groupName)) {
+      throw new BaseSignalingServerException(400, "group does not exist");
     }
+    const groupContext: GroupContext = this.getGroupContext(groupName)!;
+    if (!groupContext.users.has(username)) {
+      throw new BaseSignalingServerException(
+        400,
+        "user does not exist in group"
+      );
+    }
+    groupContext.users.delete(username);
   }
 
   /**

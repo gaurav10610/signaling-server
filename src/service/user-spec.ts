@@ -1,12 +1,9 @@
-import { BaseSignalingMessage } from "../types/message";
+import { GroupRegisterRequest } from "../types/api/api-request";
+import { GroupRegisterResponse } from "../types/api/api-response";
+import { BaseSignalingMessage, GroupRegisterMessage } from "../types/message";
 import { CustomWebSocket } from "../types/websocket";
 
 export interface UserService {
-  handleClientMessage(
-    jsonMessage: any,
-    webSocket: CustomWebSocket
-  ): Promise<void>;
-
   handleClientRegister(
     message: BaseSignalingMessage,
     webSocket: CustomWebSocket
@@ -17,9 +14,15 @@ export interface UserService {
     webSocket: CustomWebSocket
   ): Promise<void>;
 
-  broadCastMessage(message: BaseSignalingMessage): Promise<void>;
+  handleGroupRegister(
+    username: string,
+    groupName: string
+  ): Promise<GroupRegisterResponse>;
 
-  sendSocketMessage(message: BaseSignalingMessage): Promise<void>;
+  handleGroupDeRegister(
+    username: string,
+    groupName: string
+  ): Promise<GroupRegisterResponse>;
 
   handleClientDisconnect(
     webSocket: CustomWebSocket,

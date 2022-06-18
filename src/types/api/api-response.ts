@@ -18,5 +18,5 @@ export interface ActiveGroupUsersResponse {
 
 export interface GroupRegisterResponse {
   username: string;
-  registered: boolean;
+  success: boolean;
 }

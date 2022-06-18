@@ -1,57 +1,60 @@
+import { CommunicationService } from "./../../types/communication";
 import {
   BaseSignalingMessage,
-  IPCMessage,
-  IPCMessageType,
   RegisterAck,
   SignalingMessageType,
 } from "../../types/message";
 import { ServerContext, UserContext } from "../../types/context";
 import { CustomWebSocket } from "../../types/websocket";
 import { ServerConstants } from "../../utils/ServerConstants";
-import cluster from "cluster";
 import { SimpleLogger } from "../../logging/logger-impl";
 import { inject, singleton } from "tsyringe";
 import { UserService } from "../user-spec";
+import { GroupRegisterResponse } from "../../types/api/api-response";
 
 @singleton()
 export class UserServiceImpl implements UserService {
   constructor(
     @inject("logger") private logger: SimpleLogger,
-    @inject("serverContext") private serverContext: ServerContext
+    @inject("serverContext") private serverContext: ServerContext,
+    @inject("communicationService")
+    private communicationService: CommunicationService
   ) {
     this.logger.info(`websocket helper initialiazed!`);
   }
 
   /**
-   * handle message received from a client
-   * @param jsonMessage
-   * @param webSocket
+   * handle group registeration
+   * @param username
+   * @param groupName
    */
-  async handleClientMessage(
-    jsonMessage: any,
-    webSocket: CustomWebSocket
-  ): Promise<void> {
-    this.logger.info(`message received: ${jsonMessage}`);
-    try {
-      const message: BaseSignalingMessage = JSON.parse(jsonMessage);
-      switch (message.type) {
-        case SignalingMessageType.REGISTER:
-          this.handleClientRegister(message, webSocket);
-          break;
+  async handleGroupRegister(
+    username: string,
+    groupName: string
+  ): Promise<GroupRegisterResponse> {
+    this.serverContext.addUserInGroup(username, groupName);
+    const response: GroupRegisterResponse = {
+      username,
+      success: true,
+    };
+    return response;
+  }
 
-        case SignalingMessageType.DEREGISTER:
-          this.handleClientDeRegister(message, webSocket);
-          break;
-
-        default:
-          this.sendSocketMessage(message);
-          break;
-      }
-    } catch (e) {
-      this.logger.error(
-        `error handling message from websocket connection with id: ${webSocket.id}`
-      );
-    }
+  /**
+   * handle user de-register from a group
+   * @param username
+   * @param groupName
+   */
+  async handleGroupDeRegister(
+    username: string,
+    groupName: string
+  ): Promise<GroupRegisterResponse> {
+    this.serverContext.removeUserFromGroup(username, groupName);
+    const response: GroupRegisterResponse = {
+      username,
+      success: true,
+    };
+    return response;
   }
 
   /**
@@ -78,7 +81,7 @@ export class UserServiceImpl implements UserService {
      */
     if (this.serverContext.hasUserContext(username)) {
       this.logger.info(`registeration failed for user: ${username}`);
-      this.sendSocketMessage(registerAck);
+      this.communicationService.sendSocketMessage(registerAck);
       return;
     }
     this.serverContext.storeClientConnection(webSocket);
@@ -103,7 +106,7 @@ export class UserServiceImpl implements UserService {
     userContext.connectionIds.push(webSocket.id!);
     this.serverContext.storeUserContext(username, userContext);
     registerAck.success = true;
-    this.sendSocketMessage(registerAck);
+    this.communicationService.sendSocketMessage(registerAck);
   }
 
   /**
@@ -122,89 +125,6 @@ export class UserServiceImpl implements UserService {
 
       this.serverContext.removeUserContext(username);
       const groups: string[] | undefined = userContext.groups;
-
-      /**
-       * if user is part of any group then mark him/her inactive from that group
-       */
-      if (groups && groups.length > 0) {
-        groups.forEach((groupName) => {
-          this.serverContext.removeUserFromGroup(
-            webSocket.id!,
-            username,
-            groupName
-          );
-        });
-      }
-    }
-  }
-
-  /**
-   * broadcast the specified message to all the clients
-   * @param message message payload that needs to be sent
-   */
-  async broadCastMessage(message: BaseSignalingMessage): Promise<void> {
-    this.serverContext
-      .getConnections()
-      .forEach((socketConnection, connectionId) => {
-        try {
-          socketConnection.send(JSON.stringify(message));
-        } catch (e) {
-          this.logger.error(
-            `unable to send broadcast message to: ${connectionId}`
-          );
-        }
-      });
-
-    /**
-     * if server is running in cluster mode then send this message
-     * to master process which will send this message to clients connected
-     * to other server instances as well
-     */
-    if (cluster.isWorker) {
-      const ipcMessage: IPCMessage = {
-        message: message,
-        type: IPCMessageType.BROADCAST_MESSAGE,
-        processId: process.pid,
-      };
-      process.send!(JSON.stringify(ipcMessage));
-    }
-  }
-
-  /**
-   * send a message to appropriate user/users
-   * @param message
-   */
-  async sendSocketMessage(message: BaseSignalingMessage): Promise<void> {
-    if (message.to instanceof Array) {
-      message.to.forEach((recipient) => {
-        /**
-         * if the server is running in cluster mode and recipient doesn't exist
-         * of this server then there might be a case that, the recipient is connected
-         * to some other server process
-         */
-        if (cluster.worker && !this.serverContext.hasUserContext(recipient)) {
-          message.to = recipient;
-          const ipcMessage: IPCMessage = {
-            message,
-            type: IPCMessageType.USER_MESSAGE,
-            processId: process.pid,
-          };
-
-          /**
-           * @TODO verify if stringify is really necessary
-           */
-          process.send!(JSON.stringify(ipcMessage));
-        } else {
-          this.serverContext
-            .getUserConnections(recipient)
-            .forEach((webSocket) => webSocket.send(JSON.stringify(message)));
-        }
-      });
-    } else {
-      // send message to single recipient
-      this.serverContext
-        .getUserConnections(message.to)
-        .forEach((webSocket) => webSocket.send(JSON.stringify(message)));
     }
   }
 
