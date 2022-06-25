@@ -2,9 +2,44 @@
 <html>
   <head>
     <title>Test webpage!</title>
+    <link rel="stylesheet" href="css/styles.css" />
   </head>
   <body>
-    <h1>This is the first test page</h1>
+    <div class="grid-container">
+      <!-- input fields -->
+      <div
+        class="grid-column-input"
+        style="border: 1px solid black; margin-right: 5px"
+      >
+        <div style="margin: 20px">
+          <input type="text" />
+          <button type="button">Register User</button>
+        </div>
+
+        <div style="margin: 20px">
+          <input type="text" />
+          <button type="button">Register In Group</button>
+        </div>
+
+        <div style="margin: 20px">
+          <input type="text" />
+          <button type="button">Send Message</button>
+        </div>
+
+        <div id="selected-group-div" style="margin: 20px"></div>
+
+        <div id="selected-user-div" style="margin: 20px"></div>
+
+        <div id="online-users" style="margin: 20px"></div>
+      </div>
+
+      <!-- message display div -->
+      <div
+        id="message-div"
+        class="grid-colum-messages"
+        style="border: 1px solid black"
+      ></div>
+    </div>
   </body>
   <script src="js/index.js"></script>
 </html>

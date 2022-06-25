@@ -10,7 +10,7 @@
     "js:artifacts": "SET NODE_ENV=dev && node dist/main.js",
     "lint": "npx eslint . --fix",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "browser:test": "node dist/test/browser/index.js"
+    "browser:test": "nodemon --watch public --ext js,css,html --exec node dist/test/browser/index.js"
   },
   "keywords": [
     "webrtc",

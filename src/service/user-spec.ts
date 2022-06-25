@@ -1,6 +1,5 @@
-import { GroupRegisterRequest } from "../types/api/api-request";
 import { GroupRegisterResponse } from "../types/api/api-response";
-import { BaseSignalingMessage, GroupRegisterMessage } from "../types/message";
+import { BaseSignalingMessage } from "../types/message";
 import { CustomWebSocket } from "../types/websocket";
 
 export interface UserService {
