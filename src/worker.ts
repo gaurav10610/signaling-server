@@ -28,36 +28,39 @@ export class WorkerServer {
       };
       this.serverContext.storeGroupContext(groupName, groupContext);
     });
+
+    // set the server id in context
+    this.serverContext.setServerId(parseInt(process.env.SERVER_ID!));
+
+    // initialize the socket server
     await this.wsServer.init();
 
-    if (cluster.isWorker) {
-      cluster.worker!.on("message", (message: IPCMessage) => {
-        this.logger.info(
-          `ipc message received on worker of type: ${message.type}`
-        );
-        this.logger.debug(
-          `ipc message received on worker: ${JSON.stringify(message)}`
-        );
+    cluster.worker!.on("message", (message: IPCMessage) => {
+      this.logger.info(
+        `ipc message received on worker of type: ${message.type}`
+      );
+      this.logger.debug(
+        `ipc message received on worker: ${JSON.stringify(message)}`
+      );
 
-        try {
-          switch (message.type) {
-            case IPCMessageType.REGISTER:
-              break;
+      try {
+        switch (message.type) {
+          case IPCMessageType.REGISTER:
+            break;
 
-            case IPCMessageType.USER_MESSAGE:
-              break;
+          case IPCMessageType.USER_MESSAGE:
+            break;
 
-            case IPCMessageType.BROADCAST_MESSAGE:
-              break;
+          case IPCMessageType.BROADCAST_MESSAGE:
+            break;
 
-            default: // do nothing here
-          }
-        } catch (error) {
-          this.logger.error(
-            `error occured while handling message on worker process with id: ${process.pid}`
-          );
+          default: // do nothing here
         }
-      });
-    }
+      } catch (error) {
+        this.logger.error(
+          `error occured while handling message on worker process with id: ${process.pid}`
+        );
+      }
+    });
   }
 }

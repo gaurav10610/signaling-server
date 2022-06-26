@@ -8,7 +8,7 @@ import {
   IPCMessageType,
 } from "../../types/message";
 import { CommunicationService } from "./../../types/communication";
-import cluster from "cluster";
+import cluster, { Worker } from "cluster";
 
 @singleton()
 export class CommunicationServiceImpl implements CommunicationService {
@@ -25,6 +25,21 @@ export class CommunicationServiceImpl implements CommunicationService {
    */
   async sendPrimaryServerMessage(message: IPCMessage): Promise<void> {
     process.send!(message);
+  }
+
+  /**
+   * send message on particular worker server
+   * @param serverId
+   * @param message
+   */
+  async sendWorkerMessage(
+    serverId: number,
+    message: IPCMessage
+  ): Promise<void> {
+    const worker: Worker | undefined = this.serverContext.getWorker(serverId);
+    if (worker) {
+      worker.send(message);
+    }
   }
 
   /**
@@ -51,7 +66,7 @@ export class CommunicationServiceImpl implements CommunicationService {
           const ipcMessage: IPCMessage = {
             message: signalingMessage,
             type: IPCMessageType.USER_MESSAGE,
-            serverId: parseInt(process.env.SERVER_ID!),
+            serverId: this.serverContext.getServerId()!,
           };
           this.sendPrimaryServerMessage(ipcMessage);
         }
@@ -67,7 +82,7 @@ export class CommunicationServiceImpl implements CommunicationService {
         const ipcMessage: IPCMessage = {
           message: data,
           type: IPCMessageType.USER_MESSAGE,
-          serverId: parseInt(process.env.SERVER_ID!),
+          serverId: this.serverContext.getServerId()!,
         };
         this.sendPrimaryServerMessage(ipcMessage);
       }
@@ -75,19 +90,21 @@ export class CommunicationServiceImpl implements CommunicationService {
   }
 
   /**
-   * broadcast a message to all connected clients of websocket server
-   * @param data
+   * broadcast a message to all connected clients of a websocket server
+   * @param data signaling message that needs to be broadcasted
    */
   async broadCastMessage(data: BaseSignalingMessage): Promise<void> {
     const ipcMessage: IPCMessage = {
       message: data,
       type: IPCMessageType.BROADCAST_MESSAGE,
-      serverId: parseInt(process.env.SERVER_ID!),
+      serverId: this.serverContext.getServerId()!,
     };
     this.sendPrimaryServerMessage(ipcMessage);
     if (data.broadCastType === BroadCastType.ALL) {
-      for (const webSocket of this.serverContext.getConnections().values()) {
-        webSocket.send(JSON.stringify(data));
+      for (const clientConnection of this.serverContext
+        .getAllConnections()
+        .values()) {
+        clientConnection.webSocket!.send(JSON.stringify(data));
       }
     }
   }

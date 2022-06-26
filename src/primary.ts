@@ -3,24 +3,25 @@ import { Worker } from "cluster";
 import { inject, singleton } from "tsyringe";
 import { SimpleLogger } from "./logging/logger-impl";
 import { GroupContext, ServerContext } from "./types/context";
-import { IPCMessage, IPCMessageType } from "./types/message";
+import {
+  ClientConnectionStatus,
+  IPCMessage,
+  IPCMessageType,
+} from "./types/message";
 import { CommonUtils } from "./utils/common-utils";
 import { ServerConstants } from "./utils/ServerConstants";
 
 @singleton()
 export class PrimaryServer {
-  private workers: Worker[];
   constructor(
     @inject("logger") private logger: SimpleLogger,
     @inject("serverContext") private serverContext: ServerContext,
     @inject("apiServer") private apiServer: SignalingApiServer
   ) {
     this.logger.info(`initializing master server instance!`);
-    this.workers = [];
   }
 
-  async init(workers: Worker[]): Promise<void> {
-    this.workers.push(...workers);
+  async init(workers: Map<number, Worker>): Promise<void> {
     /**
      * create group context for groups
      */
@@ -40,7 +41,10 @@ export class PrimaryServer {
     /**
      * register ipc message listeners on worker processes
      */
-    this.workers.forEach((worker) => {
+    for (const [serverId, worker] of workers.entries()) {
+      // store in server context
+      this.serverContext.setWorker(serverId, worker);
+
       worker.on("message", (message: IPCMessage) => {
         this.logger.info(
           `ipc message received on master of type: ${message.type}`
@@ -50,6 +54,24 @@ export class PrimaryServer {
         );
 
         switch (message.type) {
+          // update client connection state in context
+          case IPCMessageType.CONNECTION_STATUS:
+            const connectionStatus: ClientConnectionStatus =
+              message.message as ClientConnectionStatus;
+            if (connectionStatus.connected) {
+              this.serverContext.storeClientConnection(
+                connectionStatus.connectionId,
+                {
+                  serverId: connectionStatus.serverId,
+                }
+              );
+            } else {
+              this.serverContext.removeClientConnection(
+                connectionStatus.connectionId
+              );
+            }
+            break;
+
           case IPCMessageType.REGISTER:
             break;
 
@@ -66,6 +88,6 @@ export class PrimaryServer {
           // do nothing here
         }
       });
-    });
+    }
   }
 }

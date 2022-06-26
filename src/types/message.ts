@@ -14,6 +14,7 @@ export enum BroadCastType {
 // connection open acknowledment
 export interface ConnectAck extends BaseSignalingMessage {
   authorization: string;
+  connectionId: string;
 }
 
 export enum SignalingMessageType {
@@ -25,15 +26,22 @@ export enum SignalingMessageType {
 }
 
 export enum IPCMessageType {
-  REGISTER,
-  DEREGISTER,
-  BROADCAST_MESSAGE,
-  USER_MESSAGE,
+  REGISTER = "register",
+  DEREGISTER = "deregister",
+  BROADCAST_MESSAGE = "broadcast",
+  USER_MESSAGE = "user-message",
+  CONNECTION_STATUS = "connection-status",
 }
 
 export interface IPCMessage {
   type: IPCMessageType;
   message: any;
+  serverId: number;
+}
+
+export interface ClientConnectionStatus {
+  connected: boolean;
+  connectionId: string;
   serverId: number;
 }
 

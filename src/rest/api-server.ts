@@ -1,3 +1,4 @@
+import { ServerContextResponse } from "./../types/api/api-response";
 import { ApiExceptionHandler } from "./../exception/handler";
 import { inject, singleton } from "tsyringe";
 import { SimpleLogger } from "../logging/logger-impl";
@@ -10,9 +11,12 @@ import {
   ActiveGroupUsersResponse,
   GetActiveUsersResponse,
   GetUserStatusResponse,
-  GroupRegisterResponse,
+  BaseSuccessResponse,
 } from "../types/api/api-response";
-import { GroupRegisterRequest } from "../types/api/api-request";
+import {
+  GroupRegisterRequest,
+  UserRegisterRequest,
+} from "../types/api/api-request";
 import cors from "cors";
 
 @singleton()
@@ -43,9 +47,7 @@ export class SignalingApiServer {
       this.app.use(this.errorHandler.handleError.bind(this.errorHandler));
 
       // start api server
-      const API_SERVER_PORT: number = process.env.API_SERVER_PORT
-        ? parseInt(process.env.API_SERVER_PORT)
-        : 9191;
+      const API_SERVER_PORT: number = parseInt(process.env.API_SERVER_PORT!);
 
       if (process.env.SECURE_SERVER === "true") {
         https
@@ -70,6 +72,24 @@ export class SignalingApiServer {
    * @param app
    */
   async registerApis(app: Application): Promise<void> {
+    // get internal server context
+    app.get(
+      `${ServerConstants.API_BASE_URL}/internal/context`,
+      async (
+        httpRequest: Request,
+        httpResponse: Response,
+        next: NextFunction
+      ) => {
+        try {
+          const response: ServerContextResponse =
+            await this.apiService.getServerContext();
+          httpResponse.json(response);
+        } catch (error) {
+          next(error);
+        }
+      }
+    );
+
     // get user status
     app.get(
       `${ServerConstants.API_BASE_URL}/user/status/:username`,
@@ -129,6 +149,26 @@ export class SignalingApiServer {
 
     // process group registeration request
     app.post(
+      `${ServerConstants.API_BASE_URL}/users/register`,
+      async (
+        httpRequest: Request,
+        httpResponse: Response,
+        next: NextFunction
+      ) => {
+        try {
+          const response: BaseSuccessResponse =
+            await this.apiService.processUserRegisteration(
+              httpRequest.body as UserRegisterRequest
+            );
+          httpResponse.json(response);
+        } catch (error) {
+          next(error);
+        }
+      }
+    );
+
+    // process group registeration request
+    app.post(
       `${ServerConstants.API_BASE_URL}/group/register`,
       async (
         httpRequest: Request,
@@ -136,7 +176,7 @@ export class SignalingApiServer {
         next: NextFunction
       ) => {
         try {
-          const response: GroupRegisterResponse =
+          const response: BaseSuccessResponse =
             await this.apiService.processGroupRegisteration(
               httpRequest.body as GroupRegisterRequest
             );

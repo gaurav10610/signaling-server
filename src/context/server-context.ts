@@ -1,9 +1,10 @@
+import { Worker } from "cluster";
 import { inject, singleton } from "tsyringe";
 import { BaseSignalingServerException } from "../exception/handler";
 import { SimpleLogger } from "../logging/logger-impl";
 import {
+  ClientConnection,
   GroupContext,
-  GroupUserContext,
   ServerContext,
   UserContext,
 } from "../types/context";
@@ -33,12 +34,29 @@ export class InMemoryServerContext implements ServerContext {
    * websocketId -> webSocketConnection
    *
    */
-  private clientConnections: Map<string, CustomWebSocket>;
+  private clientConnections: Map<string, ClientConnection>;
+
+  /**
+   * stores the instances of worker processes
+   *
+   * serverId -> worker instance
+   *
+   * @usage - this will be used by primary process only
+   */
+  private workers: Map<number, Worker>;
+
+  /**
+   * server id of the worker server
+   *
+   * @usage - this will be used by worker servers only
+   */
+  private serverId: number | undefined;
 
   constructor(@inject("logger") private logger: SimpleLogger) {
     this.usersContext = new Map<string, UserContext>();
     this.groupsContext = new Map<string, GroupContext>();
-    this.clientConnections = new Map<string, CustomWebSocket>();
+    this.clientConnections = new Map<string, ClientConnection>();
+    this.workers = new Map<number, Worker>();
   }
 
   getAllActiveUsers(): Map<string, UserContext> {
@@ -185,7 +203,7 @@ export class InMemoryServerContext implements ServerContext {
 
   /**
    * get a list of all the websocket connections of the specified users
-   * @param username
+   * @param username registered username of the user
    * @returns
    */
   getUserConnections(username: string): CustomWebSocket[] {
@@ -195,34 +213,32 @@ export class InMemoryServerContext implements ServerContext {
     if (userContext) {
       userContext.connectionIds
         .filter((connectionId) => this.clientConnections.has(connectionId))
-        .map((connectionId) => this.clientConnections.get(connectionId))
-        .forEach((webSocket) => connections.push(webSocket!));
+        .map(
+          (connectionId) => this.clientConnections.get(connectionId)!.webSocket!
+        )
+        .forEach((webSocket) => connections.push(webSocket));
     }
     return connections;
   }
 
   /**
-   * assign a unique id to websocket connection & keep a mapping in clientConnection context
-   * @param webSocket
+   * keep a mapping in clientConnection context
+   * @param connectionId websocket connection identifier
+   * @param clientConnection client connection instance
    */
-  storeClientConnection(webSocket: CustomWebSocket): void {
-    this.logger.info(
-      `new client connected with connection id: ${webSocket.id}`
-    );
-    this.clientConnections.set(webSocket.id!, webSocket);
+  storeClientConnection(
+    connectionId: string,
+    clientConnection: ClientConnection
+  ): void {
+    this.clientConnections.set(connectionId, clientConnection);
   }
 
   /**
    * remove the client mapping from client connection context
-   * @param webSocket
+   * @param connectionId websocket connection identifier
    */
-  removeClientConnection(webSocket: CustomWebSocket): void {
-    if (webSocket.id) {
-      this.logger.info(
-        `connection with id: ${webSocket.id} has been removed from context`
-      );
-      this.clientConnections.delete(webSocket.id);
-    }
+  removeClientConnection(connectionId: string): void {
+    this.clientConnections.delete(connectionId);
   }
 
   /**
@@ -236,7 +252,27 @@ export class InMemoryServerContext implements ServerContext {
    *
    * @returns
    */
-  getConnections(): Map<string, CustomWebSocket> {
+  getAllConnections(): Map<string, ClientConnection> {
     return this.clientConnections;
+  }
+
+  getServerId(): number | undefined {
+    return this.serverId;
+  }
+
+  setServerId(serverId: number): void {
+    this.serverId = serverId;
+  }
+
+  setWorker(serverId: number, worker: Worker): void {
+    this.workers.set(serverId, worker);
+  }
+
+  getWorker(serverId: number): Worker | undefined {
+    return this.workers.get(serverId);
+  }
+
+  getAllWorkers(): Map<number, Worker> {
+    return this.workers;
   }
 }

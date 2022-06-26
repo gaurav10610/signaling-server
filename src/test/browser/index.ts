@@ -8,7 +8,7 @@ class BrowserTest {
   }
 
   async serveTestAssets(): Promise<void> {
-    const path = __dirname + "/../../../public/test-assets";
+    const path = __dirname + "/../../../public";
     let server: express.Express = express();
     server.use(express.static(path));
     server.get("*", function (req, res) {

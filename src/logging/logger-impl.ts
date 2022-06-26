@@ -22,6 +22,7 @@ export class SimpleLogger {
       );
     }
     const loggerOptions: LoggerOptions = {
+      level: process.env.LOG_LEVEL,
       transports: transportsConfig,
       format: logform.format.combine(
         logform.format.label({

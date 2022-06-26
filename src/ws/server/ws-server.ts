@@ -1,7 +1,6 @@
 import { inject, singleton } from "tsyringe";
 import { ServerOptions, WebSocketServer } from "ws";
 import { SimpleLogger } from "../../logging/logger-impl";
-import { ServerConstants } from "../../utils/ServerConstants";
 import { WsClientHandler } from "../client/ws-client";
 
 @singleton()
@@ -16,7 +15,7 @@ export class WsServer {
   async init(): Promise<void> {
     this.server = new WebSocketServer(this.options, () => {
       this.logger.info(
-        `web socket server started at port: ${ServerConstants.WS_PORT}`
+        `web socket server started at port: ${process.env.WS_PORT}`
       );
     });
     this.registerWsEventHandlers();

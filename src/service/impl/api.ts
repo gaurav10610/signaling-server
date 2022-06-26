@@ -1,24 +1,41 @@
-import { BaseSignalingServerException } from "./../../exception/handler";
+import { UserService } from "./../user-spec";
 import { UserContext } from "./../../types/context";
 import { inject, singleton } from "tsyringe";
 import { SimpleLogger } from "../../logging/logger-impl";
 import {
   GetUserStatusResponse,
   GetActiveUsersResponse,
-  GroupRegisterResponse,
   ActiveGroupUsersResponse,
+  BaseSuccessResponse,
+  ServerContextResponse,
 } from "../../types/api/api-response";
 import { ApiService } from "../api-spec";
 import { ServerContext } from "../../types/context";
-import { GroupRegisterRequest } from "../../types/api/api-request";
+import {
+  GroupRegisterRequest,
+  UserRegisterRequest,
+} from "../../types/api/api-request";
 
 @singleton()
 export class ApiServiceImpl implements ApiService {
   constructor(
     @inject("logger") private logger: SimpleLogger,
-    @inject("serverContext") private serverContext: ServerContext
+    @inject("serverContext") private serverContext: ServerContext,
+    @inject("userService") private userService: UserService
   ) {
     logger.info(`api service is instantiated!`);
+  }
+
+  /**
+   * get internal server context
+   * @returns ServerContextResponse
+   */
+  async getServerContext(): Promise<ServerContextResponse> {
+    return {
+      clientConnections: Object.fromEntries(
+        this.serverContext.getAllConnections()
+      ),
+    };
   }
 
   /**
@@ -85,12 +102,44 @@ export class ApiServiceImpl implements ApiService {
   }
 
   /**
-   * handle group registeration
+   * handle user register/de-register requests
+   * @param userRegisterRequest
+   */
+  async processUserRegisteration(
+    userRegisterRequest: UserRegisterRequest
+  ): Promise<BaseSuccessResponse> {
+    let response: BaseSuccessResponse;
+    if (userRegisterRequest.needRegister) {
+      response = await this.userService.handleUserRegister(
+        userRegisterRequest.username
+      );
+    } else {
+      response = await this.userService.handleUserDeRegister(
+        userRegisterRequest.username
+      );
+    }
+    return response;
+  }
+
+  /**
+   * handle group register/de-register requests
    * @param groupRegisterRequest
    */
   async processGroupRegisteration(
     groupRegisterRequest: GroupRegisterRequest
-  ): Promise<GroupRegisterResponse> {
-    throw new BaseSignalingServerException(500, "Method not implemented.");
+  ): Promise<BaseSuccessResponse> {
+    let response: BaseSuccessResponse;
+    if (groupRegisterRequest.needRegister) {
+      response = await this.userService.handleGroupRegister(
+        groupRegisterRequest.username,
+        groupRegisterRequest.groupName
+      );
+    } else {
+      response = await this.userService.handleGroupDeRegister(
+        groupRegisterRequest.username,
+        groupRegisterRequest.groupName
+      );
+    }
+    return response;
   }
 }

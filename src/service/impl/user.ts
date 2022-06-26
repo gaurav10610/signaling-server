@@ -1,6 +1,10 @@
+import { BaseSuccessResponse } from "./../../types/api/api-response";
 import { CommunicationService } from "./../../types/communication";
 import {
   BaseSignalingMessage,
+  ClientConnectionStatus,
+  IPCMessage,
+  IPCMessageType,
   RegisterAck,
   SignalingMessageType,
 } from "../../types/message";
@@ -10,7 +14,6 @@ import { ServerConstants } from "../../utils/ServerConstants";
 import { SimpleLogger } from "../../logging/logger-impl";
 import { inject, singleton } from "tsyringe";
 import { UserService } from "../user-spec";
-import { GroupRegisterResponse } from "../../types/api/api-response";
 
 @singleton()
 export class UserServiceImpl implements UserService {
@@ -24,6 +27,22 @@ export class UserServiceImpl implements UserService {
   }
 
   /**
+   * handle user register on signaling server
+   * @param username
+   */
+  handleUserRegister(username: string): Promise<BaseSuccessResponse> {
+    throw new Error("Method not implemented.");
+  }
+
+  /**
+   * handle user de-register on signaling server
+   * @param username
+   */
+  handleUserDeRegister(username: string): Promise<BaseSuccessResponse> {
+    throw new Error("Method not implemented.");
+  }
+
+  /**
    * handle group registeration
    * @param username
    * @param groupName
@@ -31,9 +50,9 @@ export class UserServiceImpl implements UserService {
   async handleGroupRegister(
     username: string,
     groupName: string
-  ): Promise<GroupRegisterResponse> {
+  ): Promise<BaseSuccessResponse> {
     this.serverContext.addUserInGroup(username, groupName);
-    const response: GroupRegisterResponse = {
+    const response: BaseSuccessResponse = {
       username,
       success: true,
     };
@@ -48,9 +67,9 @@ export class UserServiceImpl implements UserService {
   async handleGroupDeRegister(
     username: string,
     groupName: string
-  ): Promise<GroupRegisterResponse> {
+  ): Promise<BaseSuccessResponse> {
     this.serverContext.removeUserFromGroup(username, groupName);
-    const response: GroupRegisterResponse = {
+    const response: BaseSuccessResponse = {
       username,
       success: true,
     };
@@ -84,15 +103,6 @@ export class UserServiceImpl implements UserService {
       this.communicationService.sendSocketMessage(registerAck);
       return;
     }
-    this.serverContext.storeClientConnection(webSocket);
-
-    webSocket.on("close", (code: number, reason: Buffer) => {
-      this.handleClientDisconnect(webSocket, username);
-    });
-
-    webSocket.on("error", (error: Error) => {
-      this.handleClientError(error, webSocket, username);
-    });
 
     /**
      * register the user on server and create a user context
@@ -122,7 +132,6 @@ export class UserServiceImpl implements UserService {
     if (this.serverContext.hasUserContext(username)) {
       const userContext: UserContext =
         this.serverContext.getUserContext(username)!;
-
       this.serverContext.removeUserContext(username);
       const groups: string[] | undefined = userContext.groups;
     }
@@ -132,19 +141,30 @@ export class UserServiceImpl implements UserService {
    * handle websocket client disconnect
    * @param webSocket
    */
-  async handleClientDisconnect(
-    webSocket: CustomWebSocket,
-    username: string
-  ): Promise<void> {
-    await this.handleClientDeRegister(
-      {
-        from: username,
-        to: ServerConstants.THE_INSTASHARE_SERVER,
-        type: SignalingMessageType.DEREGISTER,
-      },
-      webSocket
-    );
-    this.serverContext.removeClientConnection(webSocket);
+  async handleClientDisconnect(webSocket: CustomWebSocket): Promise<void> {
+    this.logger.info(`websocket connection closed with id: ${webSocket.id}`);
+    // await this.handleClientDeRegister(
+    //   {
+    //     from: username,
+    //     to: ServerConstants.THE_INSTASHARE_SERVER,
+    //     type: SignalingMessageType.DEREGISTER,
+    //   },
+    //   webSocket
+    // );
+    this.serverContext.removeClientConnection(webSocket.id!);
+
+    const connectionStatus: ClientConnectionStatus = {
+      connected: false,
+      connectionId: webSocket.id!,
+      serverId: this.serverContext.getServerId()!,
+    };
+
+    // update the primary process about the new client connection
+    this.communicationService.sendPrimaryServerMessage({
+      type: IPCMessageType.CONNECTION_STATUS,
+      serverId: this.serverContext.getServerId()!,
+      message: connectionStatus,
+    });
   }
 
   /**
@@ -154,17 +174,10 @@ export class UserServiceImpl implements UserService {
    */
   async handleClientError(
     error: Error,
-    webSocket: CustomWebSocket,
-    username: string
+    webSocket: CustomWebSocket
   ): Promise<void> {
-    await this.handleClientDeRegister(
-      {
-        from: username,
-        to: ServerConstants.THE_INSTASHARE_SERVER,
-        type: SignalingMessageType.DEREGISTER,
-      },
-      webSocket
+    this.logger.error(
+      `error occured on client connection with id: ${webSocket.id}`
     );
-    this.serverContext.removeClientConnection(webSocket);
   }
 }

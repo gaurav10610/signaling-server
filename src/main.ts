@@ -14,12 +14,12 @@ import os from "os";
 
 export async function initPrimary(): Promise<void> {
   const primaryServer: PrimaryServer = container.resolve(PrimaryServer);
-  const workers: Worker[] = [];
+  const workers: Map<number, Worker> = new Map<number, Worker>();
   const processCount: number = process.env.WORKERS_COUNT
     ? parseInt(process.env.WORKERS_COUNT)
     : os.cpus().length;
   for (let i = 0; i < processCount; i++) {
-    workers.push(cluster.fork({ ...process.env, SERVER_ID: i }));
+    workers.set(i, cluster.fork({ ...process.env, SERVER_ID: i }));
   }
   await primaryServer.init(workers);
 }

@@ -1,4 +1,4 @@
-import { GroupRegisterResponse } from "../types/api/api-response";
+import { BaseSuccessResponse } from "./../types/api/api-response";
 import { BaseSignalingMessage } from "../types/message";
 import { CustomWebSocket } from "../types/websocket";
 
@@ -13,24 +13,21 @@ export interface UserService {
     webSocket: CustomWebSocket
   ): Promise<void>;
 
+  handleUserRegister(username: string): Promise<BaseSuccessResponse>;
+
+  handleUserDeRegister(username: string): Promise<BaseSuccessResponse>;
+
   handleGroupRegister(
     username: string,
     groupName: string
-  ): Promise<GroupRegisterResponse>;
+  ): Promise<BaseSuccessResponse>;
 
   handleGroupDeRegister(
     username: string,
     groupName: string
-  ): Promise<GroupRegisterResponse>;
+  ): Promise<BaseSuccessResponse>;
 
-  handleClientDisconnect(
-    webSocket: CustomWebSocket,
-    username: string
-  ): Promise<void>;
+  handleClientDisconnect(webSocket: CustomWebSocket): Promise<void>;
 
-  handleClientError(
-    error: Error,
-    webSocket: CustomWebSocket,
-    username: string
-  ): Promise<void>;
+  handleClientError(error: Error, webSocket: CustomWebSocket): Promise<void>;
 }

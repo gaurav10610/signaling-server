@@ -1,9 +1,14 @@
+import {
+  ClientConnectionStatus,
+  IPCMessage,
+  IPCMessageType,
+} from "./../../types/message";
+import { ServerContext } from "./../../types/context";
 import { IncomingMessage } from "http";
 import { CustomWebSocket } from "../../types/websocket";
 import {
   BaseSignalingMessage,
   ConnectAck,
-  GroupRegisterMessage,
   SignalingMessageType,
 } from "../../types/message";
 import { ServerConstants } from "../../utils/ServerConstants";
@@ -18,6 +23,7 @@ export class WsClientHandler {
   constructor(
     @inject("logger") private logger: SimpleLogger,
     @inject("userService") private userService: UserService,
+    @inject("serverContext") private serverContext: ServerContext,
     @inject("communicationService")
     private communicationService: CommunicationService
   ) {
@@ -41,18 +47,12 @@ export class WsClientHandler {
       this.handleClientMessage(message, webSocket);
     });
 
-    // handler for logging only
     webSocket.on("close", (code: number, reason: Buffer) => {
-      this.logger.info(
-        `websocket connection with id: ${webSocket.id} is closed`
-      );
+      this.userService.handleClientDisconnect(webSocket);
     });
 
-    // handler for logging only
     webSocket.on("error", (error: Error) => {
-      this.logger.info(
-        `error occured on websocket connection with id: ${webSocket.id} & reason: ${error.message}`
-      );
+      this.userService.handleClientError(error, webSocket);
     });
   }
 
@@ -94,16 +94,35 @@ export class WsClientHandler {
    * @param webSocket
    */
   handleConnectionOpen(webSocket: CustomWebSocket) {
+    this.logger.info(`websocket connection open with id: ${webSocket.id!}`);
+    this.serverContext.storeClientConnection(webSocket.id!, {
+      serverId: this.serverContext.getServerId()!,
+      webSocket,
+    });
     const acknowledment: ConnectAck = {
       from: ServerConstants.THE_INSTASHARE_SERVER,
       to: ServerConstants.THE_INSTASHARE_SERVER,
       authorization: webSocket.id!,
       type: SignalingMessageType.CONNECT,
+      connectionId: webSocket.id!,
     };
 
     /**
      * send the socket id to client for all the subsequent communication
      */
     webSocket.send(JSON.stringify(acknowledment));
+
+    const connectionStatus: ClientConnectionStatus = {
+      connected: true,
+      connectionId: webSocket.id!,
+      serverId: this.serverContext.getServerId()!,
+    };
+
+    // update the primary process about the new client connection
+    this.communicationService.sendPrimaryServerMessage({
+      type: IPCMessageType.CONNECTION_STATUS,
+      serverId: this.serverContext.getServerId()!,
+      message: connectionStatus,
+    });
   }
 }

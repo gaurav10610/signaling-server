@@ -1,3 +1,4 @@
+import { Worker } from "cluster";
 import { CustomWebSocket } from "./websocket";
 
 export interface UserContext {
@@ -20,6 +21,11 @@ export interface GroupUserContext {
   joinedAt: Date;
 }
 
+export interface ClientConnection {
+  serverId: number;
+  webSocket?: CustomWebSocket;
+}
+
 export interface ServerContext {
   hasUserContext(username: string): boolean;
   getAllActiveUsers(): Map<string, UserContext>;
@@ -34,7 +40,15 @@ export interface ServerContext {
   addUserInGroup(username: string, groupName: string): void;
   removeUserFromGroup(username: string, groupName: string): void;
   getUserConnections(username: string): CustomWebSocket[];
-  storeClientConnection(webSocket: CustomWebSocket): void;
-  removeClientConnection(webSocket: CustomWebSocket): void;
-  getConnections(): Map<string, CustomWebSocket>;
+  storeClientConnection(
+    connectionId: string,
+    clientConnection: ClientConnection
+  ): void;
+  removeClientConnection(connectionId: string): void;
+  getAllConnections(): Map<string, ClientConnection>;
+  getServerId(): number | undefined;
+  setServerId(serverId: number): void;
+  setWorker(serverId: number, worker: Worker): void;
+  getWorker(serverId: number): Worker | undefined;
+  getAllWorkers(): Map<number, Worker>;
 }

@@ -20,6 +20,9 @@ container.register("logger", SimpleLogger, { lifecycle: Lifecycle.Singleton });
 container.register("serverContext", InMemoryServerContext, {
   lifecycle: Lifecycle.Singleton,
 });
+container.register("communicationService", CommunicationServiceImpl, {
+  lifecycle: Lifecycle.Singleton,
+});
 container.register("userService", UserServiceImpl, {
   lifecycle: Lifecycle.Singleton,
 });
@@ -55,9 +58,6 @@ if (cluster.isPrimary) {
 if (cluster.isWorker) {
   container.register<ServerOptions>("wsServerConfig", {
     useValue: WsServerConfig,
-  });
-  container.register("communicationService", CommunicationServiceImpl, {
-    lifecycle: Lifecycle.Singleton,
   });
   container.register("wsClientHandler", WsClientHandler, {
     lifecycle: Lifecycle.Singleton,
