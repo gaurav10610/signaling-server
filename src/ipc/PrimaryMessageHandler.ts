@@ -18,9 +18,7 @@ export class PrimaryMessageHandler {
    */
   async handleMessage(message: IPCMessage) {
     try {
-      this.logger.info(`ipc message received on master of type: ${message.type}`);
-      this.logger.debug(`ipc message received on master ${JSON.stringify(message)}`);
-
+      this.logger.debug("ipc message received on primary", message);
       switch (message.type) {
         // update client connection state in context
         case IPCMessageType.CONNECTION_STATUS:
