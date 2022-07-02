@@ -26,9 +26,7 @@ export class SimpleLogger {
       transports: transportsConfig,
       format: logform.format.combine(
         logform.format.label({
-          label: process.env.SERVICE_NAME
-            ? process.env.SERVICE_NAME
-            : "signaling-server",
+          label: process.env.SERVICE_NAME ? process.env.SERVICE_NAME : "signaling-server",
         }),
         logform.format.timestamp({ format: "MMM-DD-YYYY HH:mm:ss" }),
         logform.format.printf(

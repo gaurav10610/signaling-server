@@ -1,10 +1,9 @@
 import { v4 as uuid } from "uuid";
 
 export class CommonUtils {
-
   /**
    * generate unique id
-   * @returns 
+   * @returns
    */
   static generateUniqueId(): string {
     return uuid();

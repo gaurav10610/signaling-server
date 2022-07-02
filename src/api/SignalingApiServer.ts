@@ -14,10 +14,7 @@ import {
   GetUserStatusResponse,
   BaseSuccessResponse,
 } from "../types/api/api-response";
-import {
-  GroupRegisterRequest,
-  UserRegisterRequest,
-} from "../types/api/api-request";
+import { GroupRegisterRequest, UserRegisterRequest } from "../types/api/api-request";
 import cors from "cors";
 
 @singleton()
@@ -53,13 +50,9 @@ export class SignalingApiServer {
       const API_SERVER_PORT: number = parseInt(process.env.API_SERVER_PORT!);
 
       if (process.env.SECURE_SERVER === "true") {
-        https
-          .createServer(this.serverOptions, this.app)
-          .listen(API_SERVER_PORT, () => {
-            this.logger.info(
-              `secured api server started on port: ${API_SERVER_PORT}`
-            );
-          });
+        https.createServer(this.serverOptions, this.app).listen(API_SERVER_PORT, () => {
+          this.logger.info(`secured api server started on port: ${API_SERVER_PORT}`);
+        });
       } else {
         http.createServer(this.app).listen(API_SERVER_PORT, () => {
           this.logger.info(`api server started on port: ${API_SERVER_PORT}`);
@@ -78,14 +71,9 @@ export class SignalingApiServer {
     // get internal server context
     app.get(
       `${ServerConstants.API_BASE_URL}/internal/context`,
-      async (
-        httpRequest: Request,
-        httpResponse: Response,
-        next: NextFunction
-      ) => {
+      async (httpRequest: Request, httpResponse: Response, next: NextFunction) => {
         try {
-          const response: ServerContextResponse =
-            await this.apiService.getServerContext();
+          const response: ServerContextResponse = await this.apiService.getServerContext();
           httpResponse.json(response);
         } catch (error) {
           next(error);
@@ -96,14 +84,11 @@ export class SignalingApiServer {
     // get user status
     app.get(
       `${ServerConstants.API_BASE_URL}/user/status/:username`,
-      async (
-        httpRequest: Request,
-        httpResponse: Response,
-        next: NextFunction
-      ) => {
+      async (httpRequest: Request, httpResponse: Response, next: NextFunction) => {
         try {
-          const response: GetUserStatusResponse =
-            await this.apiService.getUserStatus(httpRequest.params.username);
+          const response: GetUserStatusResponse = await this.apiService.getUserStatus(
+            httpRequest.params.username
+          );
           httpResponse.json(response);
         } catch (error) {
           next(error);
@@ -114,14 +99,9 @@ export class SignalingApiServer {
     // get all active users
     app.get(
       `${ServerConstants.API_BASE_URL}/users/active`,
-      async (
-        httpRequest: Request,
-        httpResponse: Response,
-        next: NextFunction
-      ) => {
+      async (httpRequest: Request, httpResponse: Response, next: NextFunction) => {
         try {
-          const response: GetActiveUsersResponse =
-            await this.apiService.getActiveUsers();
+          const response: GetActiveUsersResponse = await this.apiService.getActiveUsers();
           httpResponse.json(response);
         } catch (error) {
           next(error);
@@ -132,17 +112,14 @@ export class SignalingApiServer {
     // get all active group users
     app.get(
       `${ServerConstants.API_BASE_URL}/groups/users/active`,
-      async (
-        httpRequest: Request,
-        httpResponse: Response,
-        next: NextFunction
-      ) => {
+      async (httpRequest: Request, httpResponse: Response, next: NextFunction) => {
         try {
           const groupName: string = httpRequest.query.groupName
             ? (httpRequest.query.groupName as string).trim()
             : "";
-          const response: ActiveGroupUsersResponse =
-            await this.apiService.getActiveGroupUsers(groupName);
+          const response: ActiveGroupUsersResponse = await this.apiService.getActiveGroupUsers(
+            groupName
+          );
           httpResponse.json(response);
         } catch (error) {
           next(error);
@@ -153,19 +130,14 @@ export class SignalingApiServer {
     // process user registeration request
     app.post(
       `${ServerConstants.API_BASE_URL}/users/register`,
-      async (
-        httpRequest: Request,
-        httpResponse: Response,
-        next: NextFunction
-      ) => {
+      async (httpRequest: Request, httpResponse: Response, next: NextFunction) => {
         try {
           await this.serverMiddleWare.validateHeaders(httpRequest);
           const connectionId: string = httpRequest.header("connection-id")!;
-          const response: BaseSuccessResponse =
-            await this.apiService.processUserRegisteration(
-              httpRequest.body as UserRegisterRequest,
-              connectionId
-            );
+          const response: BaseSuccessResponse = await this.apiService.processUserRegisteration(
+            httpRequest.body as UserRegisterRequest,
+            connectionId
+          );
           httpResponse.json(response);
         } catch (error) {
           next(error);
@@ -176,16 +148,11 @@ export class SignalingApiServer {
     // process group registeration request
     app.post(
       `${ServerConstants.API_BASE_URL}/groups/register`,
-      async (
-        httpRequest: Request,
-        httpResponse: Response,
-        next: NextFunction
-      ) => {
+      async (httpRequest: Request, httpResponse: Response, next: NextFunction) => {
         try {
-          const response: BaseSuccessResponse =
-            await this.apiService.processGroupRegisteration(
-              httpRequest.body as GroupRegisterRequest
-            );
+          const response: BaseSuccessResponse = await this.apiService.processGroupRegisteration(
+            httpRequest.body as GroupRegisterRequest
+          );
           httpResponse.json(response);
         } catch (error) {
           next(error);

@@ -26,9 +26,7 @@ export async function initPrimary(): Promise<void> {
 
 export async function initWorker(): Promise<void> {
   const logger: SimpleLogger = container.resolve<SimpleLogger>("logger");
-  logger.info(
-    `starting an instance of worker server with server id: ${process.env.SERVER_ID}`
-  );
+  logger.info(`starting an instance of worker server with server id: ${process.env.SERVER_ID}`);
   const workerServer: WorkerServer = container.resolve(WorkerServer);
   await workerServer.init();
 }
@@ -41,9 +39,7 @@ export async function init(): Promise<void> {
     await initWorker();
   }
   logger.info(
-    `instashare ${
-      cluster.isPrimary ? "primary" : "worker"
-    } server has been started successfully!`
+    `instashare ${cluster.isPrimary ? "primary" : "worker"} server has been started successfully!`
   );
   logger.info(`${process.env.NODE_ENV?.trimEnd()} profile is active`);
 }

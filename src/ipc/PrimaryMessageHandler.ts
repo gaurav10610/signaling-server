@@ -1,9 +1,5 @@
 import { ServerContext } from "../types/context";
-import {
-  ClientConnectionStatus,
-  IPCMessage,
-  IPCMessageType,
-} from "../types/message";
+import { ClientConnectionStatus, IPCMessage, IPCMessageType } from "../types/message";
 import { SimpleLogger } from "../logging/SimpleLogger";
 import { inject, singleton } from "tsyringe";
 
@@ -20,14 +16,10 @@ export class PrimaryMessageHandler {
    * handle messages sent from worker processes
    * @param message ipc message from worker
    */
-  async handleIpcMessage(message: IPCMessage) {
+  async handleMessage(message: IPCMessage) {
     try {
-      this.logger.info(
-        `ipc message received on master of type: ${message.type}`
-      );
-      this.logger.debug(
-        `ipc message received on master ${JSON.stringify(message)}`
-      );
+      this.logger.info(`ipc message received on master of type: ${message.type}`);
+      this.logger.debug(`ipc message received on master ${JSON.stringify(message)}`);
 
       switch (message.type) {
         // update client connection state in context
@@ -35,16 +27,11 @@ export class PrimaryMessageHandler {
           const connectionStatus: ClientConnectionStatus =
             message.message as ClientConnectionStatus;
           if (connectionStatus.connected) {
-            this.serverContext.storeClientConnection(
-              connectionStatus.connectionId,
-              {
-                serverId: connectionStatus.serverId,
-              }
-            );
+            this.serverContext.storeClientConnection(connectionStatus.connectionId, {
+              serverId: connectionStatus.serverId,
+            });
           } else {
-            this.serverContext.removeClientConnection(
-              connectionStatus.connectionId
-            );
+            this.serverContext.removeClientConnection(connectionStatus.connectionId);
           }
           break;
 
@@ -58,10 +45,7 @@ export class PrimaryMessageHandler {
         // do nothing here
       }
     } catch (error) {
-      this.logger.error(
-        `error encounter while handling ipc message from worker`,
-        { error }
-      );
+      this.logger.error(`error encounter while handling ipc message from worker`, { error });
     }
   }
 }

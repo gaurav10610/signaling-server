@@ -18,12 +18,8 @@ export class WorkerMessageHandler {
    */
   async handleMessage(message: IPCMessage) {
     try {
-      this.logger.info(
-        `ipc message received on worker of type: ${message.type}`
-      );
-      this.logger.debug(
-        `ipc message received on worker: ${JSON.stringify(message)}`
-      );
+      this.logger.info(`ipc message received on worker of type: ${message.type}`);
+      this.logger.debug(`ipc message received on worker: ${JSON.stringify(message)}`);
 
       switch (message.type) {
         case IPCMessageType.USER_REGISTER:

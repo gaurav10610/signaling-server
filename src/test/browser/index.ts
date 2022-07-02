@@ -16,9 +16,7 @@ class BrowserTest {
     });
 
     server.listen(ServerConstants.TEST_SERVER_PORT, () => {
-      console.log(
-        `test server started at port: ${ServerConstants.TEST_SERVER_PORT}`
-      );
+      console.log(`test server started at port: ${ServerConstants.TEST_SERVER_PORT}`);
     });
   }
 }

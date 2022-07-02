@@ -71,17 +71,11 @@ function logMessage(message) {
 }
 
 function init() {
-  logMessage(
-    `trying to ${connectedOnce ? "reconnect" : "connect"} web socket connection`
-  );
+  logMessage(`trying to ${connectedOnce ? "reconnect" : "connect"} web socket connection`);
   webSocket = new WebSocket("ws://localhost:9090");
 
   webSocket.addEventListener("error", function (event) {
-    logMessage(
-      `error occured while ${
-        connectedOnce ? "reconnecting" : "connecting"
-      } with signaling  server`
-    );
+    logMessage(`error occured while ${connectedOnce ? "reconnecting" : "connecting"} with signaling  server`);
     setTimeout(() => {
       init();
     }, 1000);
@@ -89,9 +83,7 @@ function init() {
 
   // Connection opened
   webSocket.addEventListener("open", function (event) {
-    logMessage(
-      `web socket client ${connectedOnce ? "reconnected" : "connected"}`
-    );
+    logMessage(`web socket client ${connectedOnce ? "reconnected" : "connected"}`);
 
     // Listen for messages
     webSocket.addEventListener("message", function (event) {

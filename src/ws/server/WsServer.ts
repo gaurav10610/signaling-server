@@ -14,9 +14,7 @@ export class WsServer {
 
   async init(): Promise<void> {
     this.server = new WebSocketServer(this.options, () => {
-      this.logger.info(
-        `web socket server started at port: ${process.env.WS_PORT}`
-      );
+      this.logger.info(`web socket server started at port: ${process.env.WS_PORT}`);
     });
     this.registerWsEventHandlers();
   }
@@ -26,10 +24,7 @@ export class WsServer {
    */
   async registerWsEventHandlers(): Promise<void> {
     this.server!.on("close", this.onServerClose.bind(this));
-    this.server!.on(
-      "connection",
-      this.clientHandler.onClientConnect.bind(this.clientHandler)
-    );
+    this.server!.on("connection", this.clientHandler.onClientConnect.bind(this.clientHandler));
     this.server!.on("error", this.onServerError.bind(this));
   }
 

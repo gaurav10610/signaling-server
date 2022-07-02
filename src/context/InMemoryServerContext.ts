@@ -2,12 +2,7 @@ import { Worker } from "cluster";
 import { inject, singleton } from "tsyringe";
 import { BaseSignalingServerException } from "../exception/ApiExceptionHandler";
 import { SimpleLogger } from "../logging/SimpleLogger";
-import {
-  ClientConnection,
-  GroupContext,
-  ServerContext,
-  UserContext,
-} from "../types/context";
+import { ClientConnection, GroupContext, ServerContext, UserContext } from "../types/context";
 import { CustomWebSocket } from "../types/websocket";
 
 @singleton()
@@ -68,9 +63,7 @@ export class InMemoryServerContext implements ServerContext {
    * @param username
    */
   removeUserContext(username: string): void {
-    this.logger.info(
-      `user with username ${username} has been removed from context`
-    );
+    this.logger.info(`user with username ${username} has been removed from context`);
     this.usersContext.delete(username);
   }
 
@@ -172,10 +165,7 @@ export class InMemoryServerContext implements ServerContext {
     }
     const groupContext: GroupContext = this.getGroupContext(groupName)!;
     if (groupContext.users.has(username)) {
-      throw new BaseSignalingServerException(
-        400,
-        "user with same name already exist in group"
-      );
+      throw new BaseSignalingServerException(400, "user with same name already exist in group");
     }
     groupContext.users.set(username, {
       joinedAt: new Date(),
@@ -193,10 +183,7 @@ export class InMemoryServerContext implements ServerContext {
     }
     const groupContext: GroupContext = this.getGroupContext(groupName)!;
     if (!groupContext.users.has(username)) {
-      throw new BaseSignalingServerException(
-        400,
-        "user does not exist in group"
-      );
+      throw new BaseSignalingServerException(400, "user does not exist in group");
     }
     groupContext.users.delete(username);
   }
@@ -208,14 +195,11 @@ export class InMemoryServerContext implements ServerContext {
    */
   getUserConnections(username: string): CustomWebSocket[] {
     const connections: CustomWebSocket[] = [];
-    const userContext: UserContext | undefined =
-      this.usersContext.get(username);
+    const userContext: UserContext | undefined = this.usersContext.get(username);
     if (userContext) {
       userContext.connectionIds
         .filter((connectionId) => this.clientConnections.has(connectionId))
-        .map(
-          (connectionId) => this.clientConnections.get(connectionId)!.webSocket!
-        )
+        .map((connectionId) => this.clientConnections.get(connectionId)!.webSocket!)
         .forEach((webSocket) => connections.push(webSocket));
     }
     return connections;
@@ -234,10 +218,7 @@ export class InMemoryServerContext implements ServerContext {
    * @param connectionId websocket connection identifier
    * @param clientConnection client connection instance
    */
-  storeClientConnection(
-    connectionId: string,
-    clientConnection: ClientConnection
-  ): void {
+  storeClientConnection(connectionId: string, clientConnection: ClientConnection): void {
     this.clientConnections.set(connectionId, clientConnection);
   }
 

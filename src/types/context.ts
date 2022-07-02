@@ -42,10 +42,7 @@ export interface ServerContext {
   removeUserFromGroup(username: string, groupName: string): void;
   getUserConnections(username: string): CustomWebSocket[];
   hasClientConnection(connectionId: string): boolean;
-  storeClientConnection(
-    connectionId: string,
-    clientConnection: ClientConnection
-  ): void;
+  storeClientConnection(connectionId: string, clientConnection: ClientConnection): void;
   removeClientConnection(connectionId: string): void;
   getClientConnection(connectionId: string): ClientConnection | undefined;
   getAllConnections(): Map<string, ClientConnection>;

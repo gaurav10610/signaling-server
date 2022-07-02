@@ -4,11 +4,7 @@ import { Worker } from "cluster";
 import { inject, singleton } from "tsyringe";
 import { SimpleLogger } from "./logging/SimpleLogger";
 import { GroupContext, ServerContext } from "./types/context";
-import {
-  ClientConnectionStatus,
-  IPCMessage,
-  IPCMessageType,
-} from "./types/message";
+import { ClientConnectionStatus, IPCMessage, IPCMessageType } from "./types/message";
 import { CommonUtils } from "./utils/CommonUtils";
 import { ServerConstants } from "./utils/ServerConstants";
 
@@ -47,10 +43,7 @@ export class PrimaryServer {
     for (const [serverId, worker] of workers.entries()) {
       // store in server context
       this.serverContext.setWorker(serverId, worker);
-      worker.on(
-        "message",
-        this.ipcMessageHandler.handleIpcMessage.bind(this.ipcMessageHandler)
-      );
+      worker.on("message", this.ipcMessageHandler.handleMessage.bind(this.ipcMessageHandler));
     }
   }
 }

@@ -1,4 +1,4 @@
-import { UserService } from "../user-spec";
+import { PrimaryUserService } from "./../user-spec";
 import { UserContext } from "../../types/context";
 import { inject, singleton } from "tsyringe";
 import { SimpleLogger } from "../../logging/SimpleLogger";
@@ -11,17 +11,14 @@ import {
 } from "../../types/api/api-response";
 import { ApiService } from "../api-spec";
 import { ServerContext } from "../../types/context";
-import {
-  GroupRegisterRequest,
-  UserRegisterRequest,
-} from "../../types/api/api-request";
+import { GroupRegisterRequest, UserRegisterRequest } from "../../types/api/api-request";
 
 @singleton()
 export class ApiServiceImpl implements ApiService {
   constructor(
     @inject("logger") private logger: SimpleLogger,
     @inject("serverContext") private serverContext: ServerContext,
-    @inject("userService") private userService: UserService
+    @inject("userService") private userService: PrimaryUserService
   ) {
     logger.info(`api service is instantiated!`);
   }
@@ -32,9 +29,7 @@ export class ApiServiceImpl implements ApiService {
    */
   async getServerContext(): Promise<ServerContextResponse> {
     return {
-      clientConnections: Object.fromEntries(
-        this.serverContext.getAllConnections()
-      ),
+      clientConnections: Object.fromEntries(this.serverContext.getAllConnections()),
     };
   }
 
@@ -58,24 +53,22 @@ export class ApiServiceImpl implements ApiService {
       groups: new Map(),
       nonGroupUsers: [],
     };
-    this.serverContext
-      .getAllActiveUsers()
-      .forEach((userContext: UserContext, username: string) => {
-        // check if user is part of some group
-        if (userContext.groups && userContext.groups.length > 0) {
-          userContext.groups.forEach((groupName) => {
-            // check if group context has already been initialized
-            if (!response.groups.has(groupName)) {
-              response.groups.set(groupName, {
-                users: [],
-              });
-            }
-            response.groups.get(groupName)!.users.push(username);
-          });
-        } else {
-          response.nonGroupUsers.push(username);
-        }
-      });
+    this.serverContext.getAllActiveUsers().forEach((userContext: UserContext, username: string) => {
+      // check if user is part of some group
+      if (userContext.groups && userContext.groups.length > 0) {
+        userContext.groups.forEach((groupName) => {
+          // check if group context has already been initialized
+          if (!response.groups.has(groupName)) {
+            response.groups.set(groupName, {
+              users: [],
+            });
+          }
+          response.groups.get(groupName)!.users.push(username);
+        });
+      } else {
+        response.nonGroupUsers.push(username);
+      }
+    });
 
     return response;
   }
@@ -84,17 +77,12 @@ export class ApiServiceImpl implements ApiService {
    * get all the active group users
    * @param groupName
    */
-  async getActiveGroupUsers(
-    groupName: string
-  ): Promise<ActiveGroupUsersResponse> {
+  async getActiveGroupUsers(groupName: string): Promise<ActiveGroupUsersResponse> {
     const response: ActiveGroupUsersResponse = {
       groups: new Map(),
     };
     if (groupName.length > 0 && this.serverContext.hasGroupContext(groupName)) {
-      response.groups.set(
-        groupName,
-        this.serverContext.getGroupContext(groupName)!
-      );
+      response.groups.set(groupName, this.serverContext.getGroupContext(groupName)!);
     } else {
       response.groups = this.serverContext.getAllActiveGroupUsers();
     }

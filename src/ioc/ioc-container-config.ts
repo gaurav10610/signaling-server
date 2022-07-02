@@ -1,10 +1,11 @@
+import { WorkerUserServiceImpl } from "./../service/impl/WorkerUserServiceImpl";
+import { PrimaryUserServiceImpl } from "./../service/impl/PrimaryUserServiceImpl";
 import { WorkerMessageHandler } from "../ipc/WorkerMessageHandler";
 import { container, Lifecycle } from "tsyringe";
 import { ServerOptions as HttpServerOptions } from "https";
 import { readFileSync } from "fs";
 import { SimpleLogger } from "../logging/SimpleLogger";
 import { InMemoryServerContext } from "../context/InMemoryServerContext";
-import { UserServiceImpl } from "../service/impl/UserServiceImpl";
 import { ApiServiceImpl } from "../service/impl/ApiServiceImpl";
 import { SignalingApiServer } from "../api/SignalingApiServer";
 import cluster from "cluster";
@@ -26,9 +27,6 @@ container.register("serverContext", InMemoryServerContext, {
 container.register("communicationService", CommunicationServiceImpl, {
   lifecycle: Lifecycle.Singleton,
 });
-container.register("userService", UserServiceImpl, {
-  lifecycle: Lifecycle.Singleton,
-});
 
 // primary process configuration
 if (cluster.isPrimary) {
@@ -36,6 +34,9 @@ if (cluster.isPrimary) {
     lifecycle: Lifecycle.Singleton,
   });
   container.register("ipcMessageHandler", PrimaryMessageHandler, {
+    lifecycle: Lifecycle.Singleton,
+  });
+  container.register("userService", PrimaryUserServiceImpl, {
     lifecycle: Lifecycle.Singleton,
   });
   container.register<HttpServerOptions>("apiServerOptions", {
@@ -69,6 +70,9 @@ if (cluster.isWorker) {
     useValue: WsServerConfig,
   });
   container.register("ipcMessageHandler", WorkerMessageHandler, {
+    lifecycle: Lifecycle.Singleton,
+  });
+  container.register("userService", WorkerUserServiceImpl, {
     lifecycle: Lifecycle.Singleton,
   });
   container.register("wsClientHandler", WsClientHandler, {

@@ -1,28 +1,20 @@
-import {
-  ClientConnectionStatus,
-  IPCMessage,
-  IPCMessageType,
-} from "../../types/message";
+import { WorkerUserService } from "./../../service/user-spec";
+import { ClientConnectionStatus, IPCMessageType } from "../../types/message";
 import { ServerContext } from "../../types/context";
 import { IncomingMessage } from "http";
 import { CustomWebSocket } from "../../types/websocket";
-import {
-  BaseSignalingMessage,
-  ConnectAck,
-  SignalingMessageType,
-} from "../../types/message";
+import { BaseSignalingMessage, ConnectAck, SignalingMessageType } from "../../types/message";
 import { ServerConstants } from "../../utils/ServerConstants";
 import { CommonUtils } from "../../utils/CommonUtils";
 import { inject, singleton } from "tsyringe";
 import { SimpleLogger } from "../../logging/SimpleLogger";
-import { UserService } from "../../service/user-spec";
 import { CommunicationService } from "../../service/communication-spec";
 
 @singleton()
 export class WsClientHandler {
   constructor(
     @inject("logger") private logger: SimpleLogger,
-    @inject("userService") private userService: UserService,
+    @inject("userService") private userService: WorkerUserService,
     @inject("serverContext") private serverContext: ServerContext,
     @inject("communicationService")
     private communicationService: CommunicationService
@@ -43,7 +35,6 @@ export class WsClientHandler {
       /**
        * @TODO integrate authentication flow here
        */
-
       this.handleClientMessage(message, webSocket);
     });
 
@@ -61,23 +52,12 @@ export class WsClientHandler {
    * @param jsonMessage
    * @param webSocket
    */
-  async handleClientMessage(
-    jsonMessage: any,
-    webSocket: CustomWebSocket
-  ): Promise<void> {
+  async handleClientMessage(jsonMessage: any, webSocket: CustomWebSocket): Promise<void> {
     this.logger.info(`message received: ${jsonMessage}`);
     try {
       const message: BaseSignalingMessage = JSON.parse(jsonMessage);
       message.isClientMessage = true;
       switch (message.type) {
-        case SignalingMessageType.REGISTER:
-          this.userService.handleClientRegister(message, webSocket);
-          break;
-
-        case SignalingMessageType.DEREGISTER:
-          this.userService.handleClientDeRegister(message, webSocket);
-          break;
-
         default:
           this.communicationService.sendSocketMessage(message);
           break;

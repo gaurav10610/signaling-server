@@ -32,10 +32,7 @@ export class CommunicationServiceImpl implements CommunicationService {
    * @param serverId
    * @param message
    */
-  async sendWorkerMessage(
-    serverId: number,
-    message: IPCMessage
-  ): Promise<void> {
+  async sendWorkerMessage(serverId: number, message: IPCMessage): Promise<void> {
     const worker: Worker | undefined = this.serverContext.getWorker(serverId);
     if (worker) {
       worker.send(message);
@@ -101,9 +98,7 @@ export class CommunicationServiceImpl implements CommunicationService {
     };
     this.sendPrimaryServerMessage(ipcMessage);
     if (data.broadCastType === BroadCastType.ALL) {
-      for (const clientConnection of this.serverContext
-        .getAllConnections()
-        .values()) {
+      for (const clientConnection of this.serverContext.getAllConnections().values()) {
         clientConnection.webSocket!.send(JSON.stringify(data));
       }
     }
