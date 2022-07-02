@@ -1,8 +1,8 @@
-import { ServerMiddleWare } from "./middleware";
+import { ServerMiddleWare } from "./ServerMiddleWare";
 import { ServerContextResponse } from "../types/api/api-response";
-import { ApiExceptionHandler } from "../exception/handler";
+import { ApiExceptionHandler } from "../exception/ApiExceptionHandler";
 import { inject, singleton } from "tsyringe";
-import { SimpleLogger } from "../logging/logger-impl";
+import { SimpleLogger } from "../logging/SimpleLogger";
 import Express, { Application, NextFunction, Request, Response } from "express";
 import http from "http";
 import https from "https";
@@ -150,7 +150,7 @@ export class SignalingApiServer {
       }
     );
 
-    // process group registeration request
+    // process user registeration request
     app.post(
       `${ServerConstants.API_BASE_URL}/users/register`,
       async (

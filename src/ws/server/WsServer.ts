@@ -1,7 +1,7 @@
 import { inject, singleton } from "tsyringe";
 import { ServerOptions, WebSocketServer } from "ws";
-import { SimpleLogger } from "../../logging/logger-impl";
-import { WsClientHandler } from "../client/ws-client";
+import { SimpleLogger } from "../../logging/SimpleLogger";
+import { WsClientHandler } from "../client/WsClientHandler";
 
 @singleton()
 export class WsServer {

@@ -1,6 +1,6 @@
-import { IPCMessage, IPCMessageType } from "./../types/message";
+import { IPCMessage, IPCMessageType } from "../types/message";
 import { inject, singleton } from "tsyringe";
-import { SimpleLogger } from "../logging/logger-impl";
+import { SimpleLogger } from "../logging/SimpleLogger";
 import { ServerContext } from "../types/context";
 
 @singleton()
@@ -26,10 +26,10 @@ export class WorkerMessageHandler {
       );
 
       switch (message.type) {
-        case IPCMessageType.REGISTER:
+        case IPCMessageType.USER_REGISTER:
           break;
 
-        case IPCMessageType.USER_MESSAGE:
+        case IPCMessageType.USER_DEREGISTER:
           break;
 
         case IPCMessageType.BROADCAST_MESSAGE:

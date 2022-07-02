@@ -1,12 +1,12 @@
-import { WorkerMessageHandler } from "./ipc/worker-message-handler";
+import { WorkerMessageHandler } from "./ipc/WorkerMessageHandler";
 import cluster from "cluster";
 import { inject, singleton } from "tsyringe";
-import { SimpleLogger } from "./logging/logger-impl";
+import { SimpleLogger } from "./logging/SimpleLogger";
 import { GroupContext, ServerContext } from "./types/context";
 import { IPCMessage, IPCMessageType } from "./types/message";
-import { CommonUtils } from "./utils/common-utils";
+import { CommonUtils } from "./utils/CommonUtils";
 import { ServerConstants } from "./utils/ServerConstants";
-import { WsServer } from "./ws/server/ws-server";
+import { WsServer } from "./ws/server/WsServer";
 
 @singleton()
 export class WorkerServer {

@@ -1,10 +1,10 @@
-import { ServerContext } from "./../types/context";
+import { ServerContext } from "../types/context";
 import {
   ClientConnectionStatus,
   IPCMessage,
   IPCMessageType,
-} from "./../types/message";
-import { SimpleLogger } from "./../logging/logger-impl";
+} from "../types/message";
+import { SimpleLogger } from "../logging/SimpleLogger";
 import { inject, singleton } from "tsyringe";
 
 @singleton()

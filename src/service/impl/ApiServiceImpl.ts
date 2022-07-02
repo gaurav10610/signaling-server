@@ -1,7 +1,7 @@
-import { UserService } from "./../user-spec";
-import { UserContext } from "./../../types/context";
+import { UserService } from "../user-spec";
+import { UserContext } from "../../types/context";
 import { inject, singleton } from "tsyringe";
-import { SimpleLogger } from "../../logging/logger-impl";
+import { SimpleLogger } from "../../logging/SimpleLogger";
 import {
   GetUserStatusResponse,
   GetActiveUsersResponse,
@@ -104,6 +104,7 @@ export class ApiServiceImpl implements ApiService {
   /**
    * handle user register/de-register requests
    * @param userRegisterRequest
+   * @param connectionId unique connection id of client
    */
   async processUserRegisteration(
     userRegisterRequest: UserRegisterRequest,

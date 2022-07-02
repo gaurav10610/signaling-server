@@ -1,5 +1,5 @@
-import { ServerContext } from "./../../types/context";
-import { SimpleLogger } from "./../../logging/logger-impl";
+import { ServerContext } from "../../types/context";
+import { SimpleLogger } from "../../logging/SimpleLogger";
 import { inject, singleton } from "tsyringe";
 import {
   BaseSignalingMessage,
@@ -7,7 +7,7 @@ import {
   IPCMessage,
   IPCMessageType,
 } from "../../types/message";
-import { CommunicationService } from "./../../types/communication";
+import { CommunicationService } from "../communication-spec";
 import cluster, { Worker } from "cluster";
 
 @singleton()

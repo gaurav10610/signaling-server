@@ -1,10 +1,10 @@
-import { BaseSignalingServerException } from "./../../exception/handler";
-import { BaseSuccessResponse } from "./../../types/api/api-response";
-import { CommunicationService } from "./../../types/communication";
+import { ClientConnection } from "../../types/context";
+import { BaseSignalingServerException } from "../../exception/ApiExceptionHandler";
+import { BaseSuccessResponse } from "../../types/api/api-response";
+import { CommunicationService } from "../communication-spec";
 import {
   BaseSignalingMessage,
   ClientConnectionStatus,
-  IPCMessage,
   IPCMessageType,
   RegisterAck,
   SignalingMessageType,
@@ -12,7 +12,7 @@ import {
 import { ServerContext, UserContext } from "../../types/context";
 import { CustomWebSocket } from "../../types/websocket";
 import { ServerConstants } from "../../utils/ServerConstants";
-import { SimpleLogger } from "../../logging/logger-impl";
+import { SimpleLogger } from "../../logging/SimpleLogger";
 import { inject, singleton } from "tsyringe";
 import { UserService } from "../user-spec";
 
@@ -39,8 +39,43 @@ export class UserServiceImpl implements UserService {
     if (this.serverContext.hasUserContext(username)) {
       throw new BaseSignalingServerException(400, "username already taken");
     }
-    // const userContext: UserContext = {};
-    // this.serverContext.storeUserContext();
+    if (!this.serverContext.hasClientConnection(connectionId)) {
+      throw new BaseSignalingServerException(
+        400,
+        "invalid client connection id"
+      );
+    }
+
+    /**
+     * fetch client connection details to know server id
+     */
+    const clientConnection: ClientConnection =
+      this.serverContext.getClientConnection(connectionId)!;
+
+    /**
+     * prepare user context
+     */
+    const userContext: UserContext = {
+      username,
+      connectionIds: [connectionId],
+      serverId: clientConnection.serverId,
+      connectedAt: new Date(),
+    };
+
+    /**
+     * update the worker server about user registeration using server id
+     */
+    this.communicationService.sendWorkerMessage(clientConnection.serverId, {
+      type: IPCMessageType.USER_REGISTER,
+      serverId: clientConnection.serverId,
+      message: userContext,
+    });
+
+    /**
+     * store user context on primary server
+     */
+    this.serverContext.storeUserContext(username, userContext);
+
     const response: BaseSuccessResponse = {
       username,
       success: false,
@@ -53,7 +88,10 @@ export class UserServiceImpl implements UserService {
    * @param username
    * @param connectionId
    */
-  async handleUserDeRegister(username: string, connectionId: string): Promise<BaseSuccessResponse> {
+  async handleUserDeRegister(
+    username: string,
+    connectionId: string
+  ): Promise<BaseSuccessResponse> {
     throw new Error("Method not implemented.");
   }
 

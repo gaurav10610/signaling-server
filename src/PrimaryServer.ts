@@ -1,15 +1,15 @@
-import { PrimaryMessageHandler } from "./ipc/primary-message-handler";
-import { SignalingApiServer } from "./api/api-server";
+import { PrimaryMessageHandler } from "./ipc/PrimaryMessageHandler";
+import { SignalingApiServer } from "./api/SignalingApiServer";
 import { Worker } from "cluster";
 import { inject, singleton } from "tsyringe";
-import { SimpleLogger } from "./logging/logger-impl";
+import { SimpleLogger } from "./logging/SimpleLogger";
 import { GroupContext, ServerContext } from "./types/context";
 import {
   ClientConnectionStatus,
   IPCMessage,
   IPCMessageType,
 } from "./types/message";
-import { CommonUtils } from "./utils/common-utils";
+import { CommonUtils } from "./utils/CommonUtils";
 import { ServerConstants } from "./utils/ServerConstants";
 
 @singleton()

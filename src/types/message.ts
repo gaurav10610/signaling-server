@@ -26,13 +26,13 @@ export enum SignalingMessageType {
 }
 
 export enum IPCMessageType {
-  REGISTER = "register",
-  DEREGISTER = "deregister",
-  GROUP_REGISTER = "grp-register",
-  GROUP_DEREGISTER = "grp-deregister",
+  USER_REGISTER = "user-reg",
+  USER_DEREGISTER = "user-dereg",
+  GROUP_REGISTER = "grp-reg",
+  GROUP_DEREGISTER = "grp-dereg",
   BROADCAST_MESSAGE = "broadcast",
-  USER_MESSAGE = "user-message",
-  CONNECTION_STATUS = "connection-status",
+  USER_MESSAGE = "user-msg",
+  CONNECTION_STATUS = "conn-status",
 }
 
 export interface IPCMessage {

@@ -24,6 +24,7 @@ export interface GroupUserContext {
 export interface ClientConnection {
   serverId: number;
   webSocket?: CustomWebSocket;
+  username?: string;
 }
 
 export interface ServerContext {
@@ -40,11 +41,13 @@ export interface ServerContext {
   addUserInGroup(username: string, groupName: string): void;
   removeUserFromGroup(username: string, groupName: string): void;
   getUserConnections(username: string): CustomWebSocket[];
+  hasClientConnection(connectionId: string): boolean;
   storeClientConnection(
     connectionId: string,
     clientConnection: ClientConnection
   ): void;
   removeClientConnection(connectionId: string): void;
+  getClientConnection(connectionId: string): ClientConnection | undefined;
   getAllConnections(): Map<string, ClientConnection>;
   getServerId(): number | undefined;
   setServerId(serverId: number): void;

@@ -2,8 +2,8 @@ import {
   ClientConnectionStatus,
   IPCMessage,
   IPCMessageType,
-} from "./../../types/message";
-import { ServerContext } from "./../../types/context";
+} from "../../types/message";
+import { ServerContext } from "../../types/context";
 import { IncomingMessage } from "http";
 import { CustomWebSocket } from "../../types/websocket";
 import {
@@ -12,11 +12,11 @@ import {
   SignalingMessageType,
 } from "../../types/message";
 import { ServerConstants } from "../../utils/ServerConstants";
-import { CommonUtils } from "../../utils/common-utils";
+import { CommonUtils } from "../../utils/CommonUtils";
 import { inject, singleton } from "tsyringe";
-import { SimpleLogger } from "../../logging/logger-impl";
+import { SimpleLogger } from "../../logging/SimpleLogger";
 import { UserService } from "../../service/user-spec";
-import { CommunicationService } from "../../types/communication";
+import { CommunicationService } from "../../service/communication-spec";
 
 @singleton()
 export class WsClientHandler {

@@ -1,7 +1,7 @@
 import { Worker } from "cluster";
 import { inject, singleton } from "tsyringe";
-import { BaseSignalingServerException } from "../exception/handler";
-import { SimpleLogger } from "../logging/logger-impl";
+import { BaseSignalingServerException } from "../exception/ApiExceptionHandler";
+import { SimpleLogger } from "../logging/SimpleLogger";
 import {
   ClientConnection,
   GroupContext,
@@ -222,6 +222,14 @@ export class InMemoryServerContext implements ServerContext {
   }
 
   /**
+   * check whether client connection exist or not
+   * @param connectionId
+   */
+  hasClientConnection(connectionId: string): boolean {
+    return this.clientConnections.has(connectionId);
+  }
+
+  /**
    * keep a mapping in clientConnection context
    * @param connectionId websocket connection identifier
    * @param clientConnection client connection instance
@@ -239,6 +247,14 @@ export class InMemoryServerContext implements ServerContext {
    */
   removeClientConnection(connectionId: string): void {
     this.clientConnections.delete(connectionId);
+  }
+
+  /**
+   * get client connection
+   * @param connectionId websocket connection identifier
+   */
+  getClientConnection(connectionId: string): ClientConnection | undefined {
+    return this.clientConnections.get(connectionId);
   }
 
   /**

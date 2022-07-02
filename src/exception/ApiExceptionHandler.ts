@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import { inject, singleton } from "tsyringe";
-import { SimpleLogger } from "../logging/logger-impl";
+import { SimpleLogger } from "../logging/SimpleLogger";
 
 @singleton()
 export class ApiExceptionHandler {

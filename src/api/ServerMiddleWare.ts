@@ -1,8 +1,8 @@
-import { BaseSignalingServerException } from "../exception/handler";
+import { BaseSignalingServerException } from "../exception/ApiExceptionHandler";
 import { NextFunction, Request, Response } from "express";
 import { IncomingHttpHeaders } from "http";
 import { inject, singleton } from "tsyringe";
-import { SimpleLogger } from "../logging/logger-impl";
+import { SimpleLogger } from "../logging/SimpleLogger";
 
 @singleton()
 export class ServerMiddleWare {
@@ -23,11 +23,11 @@ export class ServerMiddleWare {
   ) {
     if (httpRequest.method.toLowerCase() === "get") {
       this.logger.info(
-        `api request received:  { method '${httpRequest.method}', uri: '${httpRequest.url}' }`
+        `api request:  { method 'GET', uri: '${httpRequest.url}' }`
       );
     } else {
       this.logger.info(
-        `api request received:  { method '${httpRequest.method}', uri:' ${
+        `api request:  { method '${httpRequest.method}', uri:' ${
           httpRequest.url
         }', body: ${JSON.stringify(httpRequest.body)} }`
       );

@@ -7,9 +7,9 @@ dotenv.config({
 import "reflect-metadata";
 import { container } from "tsyringe";
 import "./ioc/ioc-container-config";
-import { SimpleLogger } from "./logging/logger-impl";
-import { PrimaryServer } from "./primary";
-import { WorkerServer } from "./worker";
+import { SimpleLogger } from "./logging/SimpleLogger";
+import { PrimaryServer } from "./PrimaryServer";
+import { WorkerServer } from "./WorkerServer";
 import os from "os";
 
 export async function initPrimary(): Promise<void> {

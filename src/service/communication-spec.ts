@@ -1,4 +1,4 @@
-import { BaseSignalingMessage, IPCMessage } from "./message";
+import { BaseSignalingMessage, IPCMessage } from "../types/message";
 
 export interface CommunicationService {
   sendPrimaryServerMessage(data: IPCMessage): Promise<void>;

@@ -124,16 +124,29 @@ function handleSignalingMessage(message) {
   }
 }
 
-function registerUser(username) {
+async function registerUser(username) {
   logMessage(`registering user with username: ${username}`);
-  sendMessage({
-    from: username,
-    to: "theinstashare-server",
-    type: "register",
-  });
+  try {
+    const response = await sendHttpRequest("POST", "users/register", {
+      username,
+      needRegister: true,
+    });
+    const responseBody = await response.json();
+    if (response.ok) {
+      console.log("user registeration successful");
+      console.log(`response body: ${JSON.stringify(responseBody)}`);
+    } else {
+      console.log(`user registeration failed with status ${response.status}`);
+      if (response.bodyUsed) {
+        console.log(`response body: ${JSON.stringify(responseBody)}`);
+      }
+    }
+  } catch (error) {
+    console.log(error);
+  }
 }
 
-function registerUserInGroup(groupName) {
+async function registerUserInGroup(groupName) {
   logMessage(`registering in group with group name: ${groupName}`);
 }
 
@@ -144,6 +157,21 @@ function sendMessage(message) {
     return;
   }
   webSocket.send(JSON.stringify(message));
+}
+
+function sendHttpRequest(method, uri, body) {
+  const init = {
+    method,
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+      "connection-id": connectionId,
+    },
+  };
+  if (body) {
+    init.body = JSON.stringify(body);
+  }
+  return fetch(`http://localhost:9191/api/v1/${uri}`, init);
 }
 
 init();
