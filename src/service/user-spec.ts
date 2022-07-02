@@ -13,9 +13,15 @@ export interface UserService {
     webSocket: CustomWebSocket
   ): Promise<void>;
 
-  handleUserRegister(username: string): Promise<BaseSuccessResponse>;
+  handleUserRegister(
+    username: string,
+    connectionId: string
+  ): Promise<BaseSuccessResponse>;
 
-  handleUserDeRegister(username: string): Promise<BaseSuccessResponse>;
+  handleUserDeRegister(
+    username: string,
+    connectionId: string
+  ): Promise<BaseSuccessResponse>;
 
   handleGroupRegister(
     username: string,

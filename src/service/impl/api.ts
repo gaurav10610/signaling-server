@@ -106,16 +106,19 @@ export class ApiServiceImpl implements ApiService {
    * @param userRegisterRequest
    */
   async processUserRegisteration(
-    userRegisterRequest: UserRegisterRequest
+    userRegisterRequest: UserRegisterRequest,
+    connectionId: string
   ): Promise<BaseSuccessResponse> {
     let response: BaseSuccessResponse;
     if (userRegisterRequest.needRegister) {
       response = await this.userService.handleUserRegister(
-        userRegisterRequest.username
+        userRegisterRequest.username,
+        connectionId
       );
     } else {
       response = await this.userService.handleUserDeRegister(
-        userRegisterRequest.username
+        userRegisterRequest.username,
+        connectionId
       );
     }
     return response;

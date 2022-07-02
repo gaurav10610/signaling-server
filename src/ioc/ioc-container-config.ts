@@ -1,3 +1,4 @@
+import { WorkerMessageHandler } from "./../ipc/worker-message-handler";
 import { container, Lifecycle } from "tsyringe";
 import { ServerOptions as HttpServerOptions } from "https";
 import { readFileSync } from "fs";
@@ -5,7 +6,7 @@ import { SimpleLogger } from "../logging/logger-impl";
 import { InMemoryServerContext } from "../context/server-context";
 import { UserServiceImpl } from "../service/impl/user";
 import { ApiServiceImpl } from "../service/impl/api";
-import { SignalingApiServer } from "../rest/api-server";
+import { SignalingApiServer } from "../api/api-server";
 import cluster from "cluster";
 import { WsServerConfig } from "../ws/server-config/ws-server-config";
 import { WsClientHandler } from "../ws/client/ws-client";
@@ -14,6 +15,8 @@ import { ServerOptions } from "ws";
 import { ApiExceptionHandler } from "../exception/handler";
 import cors from "cors";
 import { CommunicationServiceImpl } from "../service/impl/communication";
+import { ServerMiddleWare } from "../api/middleware";
+import { PrimaryMessageHandler } from "../ipc/primary-message-handler";
 
 container.register<any>("serverConfig", { useValue: {} });
 container.register("logger", SimpleLogger, { lifecycle: Lifecycle.Singleton });
@@ -29,6 +32,12 @@ container.register("userService", UserServiceImpl, {
 
 // primary process configuration
 if (cluster.isPrimary) {
+  container.register("serverMiddleWare", ServerMiddleWare, {
+    lifecycle: Lifecycle.Singleton,
+  });
+  container.register("ipcMessageHandler", PrimaryMessageHandler, {
+    lifecycle: Lifecycle.Singleton,
+  });
   container.register<HttpServerOptions>("apiServerOptions", {
     useValue: {
       cert: readFileSync("ssl/certificate.pem", "utf8"),
@@ -58,6 +67,9 @@ if (cluster.isPrimary) {
 if (cluster.isWorker) {
   container.register<ServerOptions>("wsServerConfig", {
     useValue: WsServerConfig,
+  });
+  container.register("ipcMessageHandler", WorkerMessageHandler, {
+    lifecycle: Lifecycle.Singleton,
   });
   container.register("wsClientHandler", WsClientHandler, {
     lifecycle: Lifecycle.Singleton,

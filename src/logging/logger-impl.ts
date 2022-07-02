@@ -42,15 +42,15 @@ export class SimpleLogger {
     this.logger = createLogger(loggerOptions);
   }
 
-  error(message: string) {
-    this.logger.error(message);
+  error(message: string, ...meta: any[]) {
+    this.logger.error(message, meta);
   }
 
-  info(message: string) {
-    this.logger.info(message);
+  info(message: string, ...meta: any[]) {
+    this.logger.info(message, meta);
   }
 
-  debug(message: string) {
-    this.logger.debug(message);
+  debug(message: string, ...meta: any[]) {
+    this.logger.debug(message, meta);
   }
 }

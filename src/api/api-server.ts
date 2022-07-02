@@ -1,5 +1,6 @@
-import { ServerContextResponse } from "./../types/api/api-response";
-import { ApiExceptionHandler } from "./../exception/handler";
+import { ServerMiddleWare } from "./middleware";
+import { ServerContextResponse } from "../types/api/api-response";
+import { ApiExceptionHandler } from "../exception/handler";
 import { inject, singleton } from "tsyringe";
 import { SimpleLogger } from "../logging/logger-impl";
 import Express, { Application, NextFunction, Request, Response } from "express";
@@ -27,7 +28,8 @@ export class SignalingApiServer {
     @inject("apiServerOptions") private serverOptions: https.ServerOptions,
     @inject("corsOptions") private corsOptions: cors.CorsOptions,
     @inject("apiService") private apiService: ApiService,
-    @inject("apiErrorHandler") private errorHandler: ApiExceptionHandler
+    @inject("apiErrorHandler") private errorHandler: ApiExceptionHandler,
+    @inject("serverMiddleWare") private serverMiddleWare: ServerMiddleWare
   ) {
     logger.info(`signaling api server is intantiated!`);
   }
@@ -40,6 +42,7 @@ export class SignalingApiServer {
       this.app.use(cors(this.corsOptions));
       this.app.use(Express.json());
       this.app.use(Express.urlencoded({ extended: true }));
+      this.app.use(this.serverMiddleWare.logRequest.bind(this.serverMiddleWare));
 
       await this.registerApis(this.app);
 
@@ -156,9 +159,12 @@ export class SignalingApiServer {
         next: NextFunction
       ) => {
         try {
+          await this.serverMiddleWare.validateHeaders(httpRequest);
+          const connectionId: string = httpRequest.header("connection-id")!;
           const response: BaseSuccessResponse =
             await this.apiService.processUserRegisteration(
-              httpRequest.body as UserRegisterRequest
+              httpRequest.body as UserRegisterRequest,
+              connectionId
             );
           httpResponse.json(response);
         } catch (error) {
@@ -169,7 +175,7 @@ export class SignalingApiServer {
 
     // process group registeration request
     app.post(
-      `${ServerConstants.API_BASE_URL}/group/register`,
+      `${ServerConstants.API_BASE_URL}/groups/register`,
       async (
         httpRequest: Request,
         httpResponse: Response,

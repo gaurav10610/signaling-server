@@ -28,6 +28,8 @@ export enum SignalingMessageType {
 export enum IPCMessageType {
   REGISTER = "register",
   DEREGISTER = "deregister",
+  GROUP_REGISTER = "grp-register",
+  GROUP_DEREGISTER = "grp-deregister",
   BROADCAST_MESSAGE = "broadcast",
   USER_MESSAGE = "user-message",
   CONNECTION_STATUS = "connection-status",

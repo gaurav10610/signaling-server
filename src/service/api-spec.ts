@@ -14,7 +14,8 @@ export interface ApiService {
   getActiveUsers(): Promise<GetActiveUsersResponse>;
   getActiveGroupUsers(groupName: string): Promise<ActiveGroupUsersResponse>;
   processUserRegisteration(
-    userRegisterRequest: UserRegisterRequest
+    userRegisterRequest: UserRegisterRequest,
+    connectionId: string
   ): Promise<BaseSuccessResponse>;
   processGroupRegisteration(
     groupRegisterRequest: GroupRegisterRequest

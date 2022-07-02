@@ -1,3 +1,4 @@
+import { WorkerMessageHandler } from "./ipc/worker-message-handler";
 import cluster from "cluster";
 import { inject, singleton } from "tsyringe";
 import { SimpleLogger } from "./logging/logger-impl";
@@ -13,7 +14,8 @@ export class WorkerServer {
     @inject("serverConfig") serverConfig: any,
     @inject("logger") private logger: SimpleLogger,
     @inject("wsServer") private wsServer: WsServer,
-    @inject("serverContext") private serverContext: ServerContext
+    @inject("serverContext") private serverContext: ServerContext,
+    @inject("ipcMessageHandler") private ipcMessageHandler: WorkerMessageHandler
   ) {
     this.logger.info(`initializaing worker server instance!`);
   }
@@ -35,32 +37,9 @@ export class WorkerServer {
     // initialize the socket server
     await this.wsServer.init();
 
-    cluster.worker!.on("message", (message: IPCMessage) => {
-      this.logger.info(
-        `ipc message received on worker of type: ${message.type}`
-      );
-      this.logger.debug(
-        `ipc message received on worker: ${JSON.stringify(message)}`
-      );
-
-      try {
-        switch (message.type) {
-          case IPCMessageType.REGISTER:
-            break;
-
-          case IPCMessageType.USER_MESSAGE:
-            break;
-
-          case IPCMessageType.BROADCAST_MESSAGE:
-            break;
-
-          default: // do nothing here
-        }
-      } catch (error) {
-        this.logger.error(
-          `error occured while handling message on worker process with id: ${process.pid}`
-        );
-      }
-    });
+    cluster.worker!.on(
+      "message",
+      this.ipcMessageHandler.handleMessage.bind(this.ipcMessageHandler)
+    );
   }
 }

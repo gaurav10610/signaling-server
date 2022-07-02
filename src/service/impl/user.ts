@@ -1,3 +1,4 @@
+import { BaseSignalingServerException } from "./../../exception/handler";
 import { BaseSuccessResponse } from "./../../types/api/api-response";
 import { CommunicationService } from "./../../types/communication";
 import {
@@ -29,16 +30,30 @@ export class UserServiceImpl implements UserService {
   /**
    * handle user register on signaling server
    * @param username
+   * @param connectionId
    */
-  handleUserRegister(username: string): Promise<BaseSuccessResponse> {
-    throw new Error("Method not implemented.");
+  async handleUserRegister(
+    username: string,
+    connectionId: string
+  ): Promise<BaseSuccessResponse> {
+    if (this.serverContext.hasUserContext(username)) {
+      throw new BaseSignalingServerException(400, "username already taken");
+    }
+    // const userContext: UserContext = {};
+    // this.serverContext.storeUserContext();
+    const response: BaseSuccessResponse = {
+      username,
+      success: false,
+    };
+    return response;
   }
 
   /**
    * handle user de-register on signaling server
    * @param username
+   * @param connectionId
    */
-  handleUserDeRegister(username: string): Promise<BaseSuccessResponse> {
+  async handleUserDeRegister(username: string, connectionId: string): Promise<BaseSuccessResponse> {
     throw new Error("Method not implemented.");
   }
 
@@ -143,14 +158,6 @@ export class UserServiceImpl implements UserService {
    */
   async handleClientDisconnect(webSocket: CustomWebSocket): Promise<void> {
     this.logger.info(`websocket connection closed with id: ${webSocket.id}`);
-    // await this.handleClientDeRegister(
-    //   {
-    //     from: username,
-    //     to: ServerConstants.THE_INSTASHARE_SERVER,
-    //     type: SignalingMessageType.DEREGISTER,
-    //   },
-    //   webSocket
-    // );
     this.serverContext.removeClientConnection(webSocket.id!);
 
     const connectionStatus: ClientConnectionStatus = {

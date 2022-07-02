@@ -39,6 +39,10 @@ export class BaseSignalingServerException extends Error {
   public status: number;
   public message: string;
 
+  /**
+   * @param status http response status
+   * @param message error message
+   */
   constructor(status: number, message: string) {
     super(message);
     this.status = status;

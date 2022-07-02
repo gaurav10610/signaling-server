@@ -1,4 +1,5 @@
-import { SignalingApiServer } from "./rest/api-server";
+import { PrimaryMessageHandler } from "./ipc/primary-message-handler";
+import { SignalingApiServer } from "./api/api-server";
 import { Worker } from "cluster";
 import { inject, singleton } from "tsyringe";
 import { SimpleLogger } from "./logging/logger-impl";
@@ -16,7 +17,9 @@ export class PrimaryServer {
   constructor(
     @inject("logger") private logger: SimpleLogger,
     @inject("serverContext") private serverContext: ServerContext,
-    @inject("apiServer") private apiServer: SignalingApiServer
+    @inject("apiServer") private apiServer: SignalingApiServer,
+    @inject("ipcMessageHandler")
+    private ipcMessageHandler: PrimaryMessageHandler
   ) {
     this.logger.info(`initializing master server instance!`);
   }
@@ -44,50 +47,10 @@ export class PrimaryServer {
     for (const [serverId, worker] of workers.entries()) {
       // store in server context
       this.serverContext.setWorker(serverId, worker);
-
-      worker.on("message", (message: IPCMessage) => {
-        this.logger.info(
-          `ipc message received on master of type: ${message.type}`
-        );
-        this.logger.debug(
-          `ipc message received on master: ${JSON.stringify(message)}`
-        );
-
-        switch (message.type) {
-          // update client connection state in context
-          case IPCMessageType.CONNECTION_STATUS:
-            const connectionStatus: ClientConnectionStatus =
-              message.message as ClientConnectionStatus;
-            if (connectionStatus.connected) {
-              this.serverContext.storeClientConnection(
-                connectionStatus.connectionId,
-                {
-                  serverId: connectionStatus.serverId,
-                }
-              );
-            } else {
-              this.serverContext.removeClientConnection(
-                connectionStatus.connectionId
-              );
-            }
-            break;
-
-          case IPCMessageType.REGISTER:
-            break;
-
-          case IPCMessageType.DEREGISTER:
-            break;
-
-          case IPCMessageType.USER_MESSAGE:
-            break;
-
-          case IPCMessageType.BROADCAST_MESSAGE:
-            break;
-
-          default:
-          // do nothing here
-        }
-      });
+      worker.on(
+        "message",
+        this.ipcMessageHandler.handleIpcMessage.bind(this.ipcMessageHandler)
+      );
     }
   }
 }
