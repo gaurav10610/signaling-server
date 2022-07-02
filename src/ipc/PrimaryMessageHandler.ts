@@ -2,12 +2,14 @@ import { ServerContext } from "../types/context";
 import { ClientConnectionStatus, IPCMessage, IPCMessageType } from "../types/message";
 import { SimpleLogger } from "../logging/SimpleLogger";
 import { inject, singleton } from "tsyringe";
+import { PrimaryUserService } from "../service/user-spec";
 
 @singleton()
 export class PrimaryMessageHandler {
   constructor(
     @inject("logger") private logger: SimpleLogger,
-    @inject("serverContext") private serverContext: ServerContext
+    @inject("serverContext") private serverContext: ServerContext,
+    @inject("userService") private userService: PrimaryUserService
   ) {
     logger.info("primary ipc message handler instantiated!");
   }
@@ -22,15 +24,7 @@ export class PrimaryMessageHandler {
       switch (message.type) {
         // update client connection state in context
         case IPCMessageType.CONNECTION_STATUS:
-          const connectionStatus: ClientConnectionStatus =
-            message.message as ClientConnectionStatus;
-          if (connectionStatus.connected) {
-            this.serverContext.storeClientConnection(connectionStatus.connectionId, {
-              serverId: connectionStatus.serverId,
-            });
-          } else {
-            this.serverContext.removeClientConnection(connectionStatus.connectionId);
-          }
+          this.userService.handleUserConnectionStatus(message);
           break;
 
         case IPCMessageType.USER_MESSAGE:

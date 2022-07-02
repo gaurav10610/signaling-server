@@ -15,9 +15,9 @@ export interface WorkerUserService extends BaseUserService {
 }
 
 export interface PrimaryUserService extends BaseUserService {
+  handleUserConnectionStatus(message: IPCMessage): Promise<void>;
   handleUserRegister(username: string, connectionId: string): Promise<BaseSuccessResponse>;
   handleUserDeRegister(username: string, connectionId: string): Promise<BaseSuccessResponse>;
   handleGroupRegister(username: string, groupName: string): Promise<BaseSuccessResponse>;
   handleGroupDeRegister(username: string, groupName: string): Promise<BaseSuccessResponse>;
-  handleClientDisconnect(webSocket: IPCMessage): Promise<void>;
 }

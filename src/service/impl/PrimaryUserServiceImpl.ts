@@ -3,7 +3,7 @@ import { BaseSignalingServerException } from "../../exception/ApiExceptionHandle
 import { SimpleLogger } from "../../logging/SimpleLogger";
 import { BaseSuccessResponse } from "../../types/api/api-response";
 import { ClientConnection, ServerContext, UserContext } from "../../types/context";
-import { IPCMessage, IPCMessageType } from "../../types/message";
+import { ClientConnectionStatus, IPCMessage, IPCMessageType } from "../../types/message";
 import { CommunicationService } from "../communication-spec";
 import { PrimaryUserService } from "./../user-spec";
 
@@ -16,6 +16,52 @@ export class PrimaryUserServiceImpl implements PrimaryUserService {
     private communicationService: CommunicationService
   ) {
     this.logger.info(`primary user service instantiated!`);
+  }
+
+  /**
+   * handle connection status message from worker server
+   * @param message ipc message from worker
+   */
+  async handleUserConnectionStatus(message: IPCMessage): Promise<void> {
+    const { connectionId, connected, serverId } = message.message as ClientConnectionStatus;
+
+    /**
+     * when user got connected with web socket server,
+     * then just store the connection mapping in server context
+     */
+    if (connected) {
+      this.serverContext.storeClientConnection(connectionId, {
+        serverId,
+      });
+      return;
+    }
+
+    /**
+     * when user got disconnected from server, then check if user was
+     * a registered user and then do the cleanup accordingly
+     */
+    const clientConnection: ClientConnection | undefined =
+      this.serverContext.getClientConnection(connectionId);
+    if (clientConnection) {
+      const { username } = clientConnection;
+      if (username && this.serverContext.hasUserContext(username)) {
+        const { groups } = this.serverContext.getUserContext(username)!;
+
+        /**
+         * remove user from all the groups that he is part of
+         */
+        if (groups && groups.length > 0) {
+          groups
+            .filter((groupName) => this.serverContext.hasGroupContext(groupName))
+            .map((groupName) => this.serverContext.getGroupContext(groupName)!)
+            .forEach((groupContext) => {
+              groupContext.users.delete(clientConnection.username!);
+            });
+        }
+        this.serverContext.removeUserContext(username);
+      }
+      this.serverContext.removeClientConnection(connectionId);
+    }
   }
 
   /**
@@ -83,10 +129,6 @@ export class PrimaryUserServiceImpl implements PrimaryUserService {
   }
 
   async handleGroupDeRegister(username: string, groupName: string): Promise<BaseSuccessResponse> {
-    throw new Error("Method not implemented.");
-  }
-
-  async handleClientDisconnect(webSocket: IPCMessage): Promise<void> {
     throw new Error("Method not implemented.");
   }
 }
