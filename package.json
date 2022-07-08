@@ -12,6 +12,9 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "browser:test": "nodemon --watch public --ext js,css,html --exec node dist/test/browser/index.js"
   },
+  "prettier": {
+    "printWidth": 120
+  },
   "keywords": [
     "webrtc",
     "signaling",

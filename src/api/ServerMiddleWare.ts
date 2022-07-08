@@ -20,9 +20,9 @@ export class ServerMiddleWare {
       this.logger.info(`api request:  { method 'GET', uri: '${httpRequest.url}' }`);
     } else {
       this.logger.info(
-        `api request:  { method '${httpRequest.method}', uri:' ${
-          httpRequest.url
-        }', body: ${JSON.stringify(httpRequest.body)} }`
+        `api request:  { method '${httpRequest.method}', uri:' ${httpRequest.url}', body: ${JSON.stringify(
+          httpRequest.body
+        )} }`
       );
     }
     next();
