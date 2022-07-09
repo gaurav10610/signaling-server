@@ -1,6 +1,6 @@
-import { WorkerUserService } from "./../../service/user-spec";
+import { CommunicationServiceImpl } from "./../../service/impl/CommunicationServiceImpl";
+import { WorkerUserServiceImpl } from "./../../service/impl/WorkerUserServiceImpl";
 import { ClientConnectionStatus, IPCMessageType } from "../../types/message";
-import { ServerContext } from "../../types/context";
 import { IncomingMessage } from "http";
 import { CustomWebSocket } from "../../types/websocket";
 import { BaseSignalingMessage, ConnectAck, SignalingMessageType } from "../../types/message";
@@ -9,15 +9,16 @@ import { CommonUtils } from "../../utils/CommonUtils";
 import { inject, singleton } from "tsyringe";
 import { SimpleLogger } from "../../logging/SimpleLogger";
 import { CommunicationService } from "../../service/communication-spec";
+import { InMemoryServerContext } from "../../context/InMemoryServerContext";
 
 @singleton()
 export class WsClientHandler {
   constructor(
     @inject("logger") private logger: SimpleLogger,
-    @inject("userService") private userService: WorkerUserService,
-    @inject("serverContext") private serverContext: ServerContext,
+    @inject("userService") private userService: WorkerUserServiceImpl,
+    @inject("serverContext") private serverContext: InMemoryServerContext,
     @inject("communicationService")
-    private communicationService: CommunicationService
+    private communicationService: CommunicationServiceImpl
   ) {
     this.logger.info(`websocket client handler initialized!`);
   }

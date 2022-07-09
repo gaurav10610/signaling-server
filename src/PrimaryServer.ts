@@ -3,16 +3,16 @@ import { SignalingApiServer } from "./api/SignalingApiServer";
 import { Worker } from "cluster";
 import { inject, singleton } from "tsyringe";
 import { SimpleLogger } from "./logging/SimpleLogger";
-import { GroupContext, ServerContext } from "./types/context";
-import { ClientConnectionStatus, IPCMessage, IPCMessageType } from "./types/message";
+import { GroupContext } from "./types/context";
 import { CommonUtils } from "./utils/CommonUtils";
 import { ServerConstants } from "./utils/ServerConstants";
+import { InMemoryServerContext } from "./context/InMemoryServerContext";
 
 @singleton()
 export class PrimaryServer {
   constructor(
     @inject("logger") private logger: SimpleLogger,
-    @inject("serverContext") private serverContext: ServerContext,
+    @inject("serverContext") private serverContext: InMemoryServerContext,
     @inject("apiServer") private apiServer: SignalingApiServer,
     @inject("ipcMessageHandler")
     private ipcMessageHandler: PrimaryMessageHandler

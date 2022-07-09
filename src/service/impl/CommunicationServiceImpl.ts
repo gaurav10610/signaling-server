@@ -1,15 +1,15 @@
-import { ServerContext } from "../../types/context";
 import { SimpleLogger } from "../../logging/SimpleLogger";
 import { inject, singleton } from "tsyringe";
 import { BaseSignalingMessage, BroadCastType, IPCMessage, IPCMessageType } from "../../types/message";
 import { CommunicationService } from "../communication-spec";
-import cluster, { Worker } from "cluster";
+import { Worker } from "cluster";
+import { InMemoryServerContext } from "../../context/InMemoryServerContext";
 
 @singleton()
 export class CommunicationServiceImpl implements CommunicationService {
   constructor(
     @inject("logger") private logger: SimpleLogger,
-    @inject("serverContext") private serverContext: ServerContext
+    @inject("serverContext") private serverContext: InMemoryServerContext
   ) {
     this.logger.info(`communication service is instantiated!`);
   }

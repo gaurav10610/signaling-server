@@ -1,4 +1,4 @@
-import { PrimaryUserService } from "./../user-spec";
+import { PrimaryUserServiceImpl } from "./PrimaryUserServiceImpl";
 import { UserContext } from "../../types/context";
 import { inject, singleton } from "tsyringe";
 import { SimpleLogger } from "../../logging/SimpleLogger";
@@ -10,15 +10,15 @@ import {
   ServerContextResponse,
 } from "../../types/api/api-response";
 import { ApiService } from "../api-spec";
-import { ServerContext } from "../../types/context";
 import { GroupRegisterRequest, UserRegisterRequest } from "../../types/api/api-request";
+import { InMemoryServerContext } from "../../context/InMemoryServerContext";
 
 @singleton()
 export class ApiServiceImpl implements ApiService {
   constructor(
     @inject("logger") private logger: SimpleLogger,
-    @inject("serverContext") private serverContext: ServerContext,
-    @inject("userService") private userService: PrimaryUserService
+    @inject("serverContext") private serverContext: InMemoryServerContext,
+    @inject("userService") private userService: PrimaryUserServiceImpl
   ) {
     logger.info(`api service is instantiated!`);
   }
@@ -91,39 +91,26 @@ export class ApiServiceImpl implements ApiService {
 
   /**
    * handle user register/de-register requests
-   * @param userRegisterRequest
+   * @param request
    * @param connectionId unique connection id of client
    */
-  async processUserRegisteration(
-    userRegisterRequest: UserRegisterRequest,
-    connectionId: string
-  ): Promise<BaseSuccessResponse> {
-    let response: BaseSuccessResponse;
-    if (userRegisterRequest.needRegister) {
-      response = await this.userService.handleUserRegister(userRegisterRequest.username, connectionId);
+  async processUserRegisteration(request: UserRegisterRequest, connectionId: string): Promise<BaseSuccessResponse> {
+    if (request.needRegister) {
+      return this.userService.handleUserRegister(request.username, connectionId);
     } else {
-      response = await this.userService.handleUserDeRegister(userRegisterRequest.username, connectionId);
+      return this.userService.handleUserDeRegister(request.username, connectionId);
     }
-    return response;
   }
 
   /**
    * handle group register/de-register requests
-   * @param groupRegisterRequest
+   * @param request
    */
-  async processGroupRegisteration(groupRegisterRequest: GroupRegisterRequest): Promise<BaseSuccessResponse> {
-    let response: BaseSuccessResponse;
-    if (groupRegisterRequest.needRegister) {
-      response = await this.userService.handleGroupRegister(
-        groupRegisterRequest.username,
-        groupRegisterRequest.groupName
-      );
+  async processGroupRegisteration(request: GroupRegisterRequest): Promise<BaseSuccessResponse> {
+    if (request.needRegister) {
+      return this.userService.handleGroupRegister(request.username, request.groupName);
     } else {
-      response = await this.userService.handleGroupDeRegister(
-        groupRegisterRequest.username,
-        groupRegisterRequest.groupName
-      );
+      return this.userService.handleGroupDeRegister(request.username, request.groupName);
     }
-    return response;
   }
 }

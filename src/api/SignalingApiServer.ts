@@ -7,7 +7,6 @@ import Express, { Application, NextFunction, Request, Response } from "express";
 import http from "http";
 import https from "https";
 import { ServerConstants } from "../utils/ServerConstants";
-import { ApiService } from "../service/api-spec";
 import {
   ActiveGroupUsersResponse,
   GetActiveUsersResponse,
@@ -16,6 +15,7 @@ import {
 } from "../types/api/api-response";
 import { GroupRegisterRequest, UserRegisterRequest } from "../types/api/api-request";
 import cors from "cors";
+import { ApiServiceImpl } from "../service/impl/ApiServiceImpl";
 
 @singleton()
 export class SignalingApiServer {
@@ -24,7 +24,7 @@ export class SignalingApiServer {
     @inject("logger") private logger: SimpleLogger,
     @inject("apiServerOptions") private serverOptions: https.ServerOptions,
     @inject("corsOptions") private corsOptions: cors.CorsOptions,
-    @inject("apiService") private apiService: ApiService,
+    @inject("apiService") private apiService: ApiServiceImpl,
     @inject("apiErrorHandler") private errorHandler: ApiExceptionHandler,
     @inject("serverMiddleWare") private serverMiddleWare: ServerMiddleWare
   ) {

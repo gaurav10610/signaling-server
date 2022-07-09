@@ -1,13 +1,13 @@
 import { IPCMessage, IPCMessageType } from "../types/message";
 import { inject, singleton } from "tsyringe";
 import { SimpleLogger } from "../logging/SimpleLogger";
-import { ServerContext } from "../types/context";
+import { InMemoryServerContext } from "../context/InMemoryServerContext";
 
 @singleton()
 export class WorkerMessageHandler {
   constructor(
     @inject("logger") private logger: SimpleLogger,
-    @inject("serverContext") private serverContext: ServerContext
+    @inject("serverContext") private serverContext: InMemoryServerContext
   ) {
     logger.info("primary ipc message handler instantiated!");
   }

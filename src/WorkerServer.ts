@@ -2,11 +2,11 @@ import { WorkerMessageHandler } from "./ipc/WorkerMessageHandler";
 import cluster from "cluster";
 import { inject, singleton } from "tsyringe";
 import { SimpleLogger } from "./logging/SimpleLogger";
-import { GroupContext, ServerContext } from "./types/context";
-import { IPCMessage, IPCMessageType } from "./types/message";
+import { GroupContext } from "./types/context";
 import { CommonUtils } from "./utils/CommonUtils";
 import { ServerConstants } from "./utils/ServerConstants";
 import { WsServer } from "./ws/server/WsServer";
+import { InMemoryServerContext } from "./context/InMemoryServerContext";
 
 @singleton()
 export class WorkerServer {
@@ -14,7 +14,7 @@ export class WorkerServer {
     @inject("serverConfig") serverConfig: any,
     @inject("logger") private logger: SimpleLogger,
     @inject("wsServer") private wsServer: WsServer,
-    @inject("serverContext") private serverContext: ServerContext,
+    @inject("serverContext") private serverContext: InMemoryServerContext,
     @inject("ipcMessageHandler") private ipcMessageHandler: WorkerMessageHandler
   ) {
     this.logger.info(`initializaing worker server instance!`);

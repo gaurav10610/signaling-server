@@ -1,18 +1,18 @@
+import { CommunicationServiceImpl } from "./CommunicationServiceImpl";
 import { inject, singleton } from "tsyringe";
+import { InMemoryServerContext } from "../../context/InMemoryServerContext";
 import { SimpleLogger } from "../../logging/SimpleLogger";
-import { ServerContext } from "../../types/context";
 import { ClientConnectionStatus, IPCMessage, IPCMessageType } from "../../types/message";
 import { CustomWebSocket } from "../../types/websocket";
-import { CommunicationService } from "../communication-spec";
 import { WorkerUserService } from "./../user-spec";
 
 @singleton()
 export class WorkerUserServiceImpl implements WorkerUserService {
   constructor(
     @inject("logger") private logger: SimpleLogger,
-    @inject("serverContext") private serverContext: ServerContext,
+    @inject("serverContext") private serverContext: InMemoryServerContext,
     @inject("communicationService")
-    private communicationService: CommunicationService
+    private communicationService: CommunicationServiceImpl
   ) {
     this.logger.info(`worker user service instantiated!`);
   }
