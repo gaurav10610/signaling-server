@@ -47,10 +47,7 @@ if (cluster.isPrimary) {
   });
   container.register<cors.CorsOptions>("corsOptions", {
     useValue: {
-      origin:
-        process.env.NODE_ENV === "dev"
-          ? process.env.ALLOWED_ORIGINS
-          : process.env.ALLOWED_ORIGINS!.split(","),
+      origin: process.env.NODE_ENV === "dev" ? process.env.ALLOWED_ORIGINS : process.env.ALLOWED_ORIGINS!.split(","),
     },
   });
   container.register("apiErrorHandler", ApiExceptionHandler, {

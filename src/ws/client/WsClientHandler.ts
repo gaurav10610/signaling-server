@@ -63,9 +63,7 @@ export class WsClientHandler {
           break;
       }
     } catch (e) {
-      this.logger.error(
-        `error handling message from websocket connection with id: ${webSocket.id}`
-      );
+      this.logger.error(`error handling message from websocket connection with id: ${webSocket.id}`);
     }
   }
 

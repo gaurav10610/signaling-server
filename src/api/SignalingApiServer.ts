@@ -86,9 +86,7 @@ export class SignalingApiServer {
       `${ServerConstants.API_BASE_URL}/user/status/:username`,
       async (httpRequest: Request, httpResponse: Response, next: NextFunction) => {
         try {
-          const response: GetUserStatusResponse = await this.apiService.getUserStatus(
-            httpRequest.params.username
-          );
+          const response: GetUserStatusResponse = await this.apiService.getUserStatus(httpRequest.params.username);
           httpResponse.json(response);
         } catch (error) {
           next(error);
@@ -114,12 +112,8 @@ export class SignalingApiServer {
       `${ServerConstants.API_BASE_URL}/groups/users/active`,
       async (httpRequest: Request, httpResponse: Response, next: NextFunction) => {
         try {
-          const groupName: string = httpRequest.query.groupName
-            ? (httpRequest.query.groupName as string).trim()
-            : "";
-          const response: ActiveGroupUsersResponse = await this.apiService.getActiveGroupUsers(
-            groupName
-          );
+          const groupName: string = httpRequest.query.groupName ? (httpRequest.query.groupName as string).trim() : "";
+          const response: ActiveGroupUsersResponse = await this.apiService.getActiveGroupUsers(groupName);
           httpResponse.json(response);
         } catch (error) {
           next(error);

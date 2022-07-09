@@ -34,9 +34,7 @@ export class WorkerMessageHandler {
         default: // do nothing here
       }
     } catch (error) {
-      this.logger.error(
-        `error occured while handling message on worker process with id: ${process.pid}`
-      );
+      this.logger.error(`error occured while handling message on worker process with id: ${process.pid}`);
     }
   }
 }

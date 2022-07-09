@@ -100,15 +100,9 @@ export class ApiServiceImpl implements ApiService {
   ): Promise<BaseSuccessResponse> {
     let response: BaseSuccessResponse;
     if (userRegisterRequest.needRegister) {
-      response = await this.userService.handleUserRegister(
-        userRegisterRequest.username,
-        connectionId
-      );
+      response = await this.userService.handleUserRegister(userRegisterRequest.username, connectionId);
     } else {
-      response = await this.userService.handleUserDeRegister(
-        userRegisterRequest.username,
-        connectionId
-      );
+      response = await this.userService.handleUserDeRegister(userRegisterRequest.username, connectionId);
     }
     return response;
   }
@@ -117,9 +111,7 @@ export class ApiServiceImpl implements ApiService {
    * handle group register/de-register requests
    * @param groupRegisterRequest
    */
-  async processGroupRegisteration(
-    groupRegisterRequest: GroupRegisterRequest
-  ): Promise<BaseSuccessResponse> {
+  async processGroupRegisteration(groupRegisterRequest: GroupRegisterRequest): Promise<BaseSuccessResponse> {
     let response: BaseSuccessResponse;
     if (groupRegisterRequest.needRegister) {
       response = await this.userService.handleGroupRegister(

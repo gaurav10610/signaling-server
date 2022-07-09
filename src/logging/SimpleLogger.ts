@@ -16,9 +16,7 @@ export class SimpleLogger {
     } else {
       transportsConfig.push(
         new transports.File({
-          filename: process.env.LOG_FILE_PATH
-            ? process.env.LOG_FILE_PATH
-            : "logs/signaling-server.log",
+          filename: process.env.LOG_FILE_PATH ? process.env.LOG_FILE_PATH : "logs/signaling-server.log",
         })
       );
     }
@@ -46,9 +44,7 @@ export class SimpleLogger {
           (info) =>
             `{ 'level': '${info.level}', 'label': '${info.label}', 'timestamp': '${[
               info.timestamp,
-            ]}', 'serverType': '${serverType}', 'processId': '${process.pid}', 'message': '${
-              info.message
-            }' }`
+            ]}', 'serverType': '${serverType}', 'processId': '${process.pid}', 'message': '${info.message}' }`
         )
       );
     } else {
@@ -61,9 +57,9 @@ export class SimpleLogger {
 
       logFormats.push(
         logform.format.printf((info) => {
-          let logMessage: string = `${info.level}: ${info.label}: ${[
-            info.timestamp,
-          ]}: ${serverType}: ${process.pid}: ${info.message}`;
+          let logMessage: string = `${info.level}: ${info.label}: ${[info.timestamp]}: ${serverType}: ${process.pid}: ${
+            info.message
+          }`;
 
           // append metadata to logMessage
           if (Object.keys(info.metadata).length > 0) {

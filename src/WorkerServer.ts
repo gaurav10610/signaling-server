@@ -37,9 +37,6 @@ export class WorkerServer {
     // initialize the socket server
     await this.wsServer.init();
 
-    cluster.worker!.on(
-      "message",
-      this.ipcMessageHandler.handleMessage.bind(this.ipcMessageHandler)
-    );
+    cluster.worker!.on("message", this.ipcMessageHandler.handleMessage.bind(this.ipcMessageHandler));
   }
 }

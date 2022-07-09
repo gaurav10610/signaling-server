@@ -1,12 +1,7 @@
 import { ServerContext } from "../../types/context";
 import { SimpleLogger } from "../../logging/SimpleLogger";
 import { inject, singleton } from "tsyringe";
-import {
-  BaseSignalingMessage,
-  BroadCastType,
-  IPCMessage,
-  IPCMessageType,
-} from "../../types/message";
+import { BaseSignalingMessage, BroadCastType, IPCMessage, IPCMessageType } from "../../types/message";
 import { CommunicationService } from "../communication-spec";
 import cluster, { Worker } from "cluster";
 
@@ -52,9 +47,7 @@ export class CommunicationServiceImpl implements CommunicationService {
          * to some other server process
          */
         if (this.serverContext.hasUserContext(recipient)) {
-          this.serverContext
-            .getUserConnections(recipient)
-            .forEach((webSocket) => webSocket.send(JSON.stringify(data)));
+          this.serverContext.getUserConnections(recipient).forEach((webSocket) => webSocket.send(JSON.stringify(data)));
         } else if (data.isClientMessage) {
           const signalingMessage: BaseSignalingMessage = {
             ...data,
@@ -72,9 +65,7 @@ export class CommunicationServiceImpl implements CommunicationService {
       // send message to single recipient
 
       if (this.serverContext.hasUserContext(data.to)) {
-        this.serverContext
-          .getUserConnections(data.to)
-          .forEach((webSocket) => webSocket.send(JSON.stringify(data)));
+        this.serverContext.getUserConnections(data.to).forEach((webSocket) => webSocket.send(JSON.stringify(data)));
       } else if (data.isClientMessage) {
         const ipcMessage: IPCMessage = {
           message: data,

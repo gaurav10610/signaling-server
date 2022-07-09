@@ -1,6 +1,5 @@
 import { IPCMessage } from "./../types/message";
 import { BaseSuccessResponse } from "./../types/api/api-response";
-import { BaseSignalingMessage } from "../types/message";
 import { CustomWebSocket } from "../types/websocket";
 
 export interface BaseUserService {}

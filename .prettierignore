@@ -1,0 +1,16 @@
+dist
+environment
+logs
+node_modules
+public
+ssl
+
+tsconfig.json
+.gitignore
+.prettierignore
+LICENSE
+nodemon.json.example
+package-lock.json
+package.json
+README.md
+**/.git

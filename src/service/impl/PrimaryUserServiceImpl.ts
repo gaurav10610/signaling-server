@@ -40,8 +40,7 @@ export class PrimaryUserServiceImpl implements PrimaryUserService {
      * when user got disconnected from server, then check if user was
      * a registered user and then do the cleanup accordingly
      */
-    const clientConnection: ClientConnection | undefined =
-      this.serverContext.getClientConnection(connectionId);
+    const clientConnection: ClientConnection | undefined = this.serverContext.getClientConnection(connectionId);
     if (clientConnection) {
       const { username } = clientConnection;
       if (username && this.serverContext.hasUserContext(username)) {
@@ -82,8 +81,7 @@ export class PrimaryUserServiceImpl implements PrimaryUserService {
     /**
      * fetch client connection details to know server id
      */
-    const clientConnection: ClientConnection =
-      this.serverContext.getClientConnection(connectionId)!;
+    const clientConnection: ClientConnection = this.serverContext.getClientConnection(connectionId)!;
 
     /**
      * prepare user context

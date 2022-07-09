@@ -17,7 +17,5 @@ export interface ApiService {
     userRegisterRequest: UserRegisterRequest,
     connectionId: string
   ): Promise<BaseSuccessResponse>;
-  processGroupRegisteration(
-    groupRegisterRequest: GroupRegisterRequest
-  ): Promise<BaseSuccessResponse>;
+  processGroupRegisteration(groupRegisterRequest: GroupRegisterRequest): Promise<BaseSuccessResponse>;
 }

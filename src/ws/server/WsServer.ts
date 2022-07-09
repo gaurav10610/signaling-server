@@ -40,8 +40,6 @@ export class WsServer {
    * @param error
    */
   private onServerError(error: Error) {
-    this.logger.error(
-      `error encountered on ws server with name: ${error.name} & message: ${error.message}`
-    );
+    this.logger.error(`error encountered on ws server with name: ${error.name} & message: ${error.message}`);
   }
 }
