@@ -1,3 +1,4 @@
+import { UserContext } from "./../../types/context";
 import { CommunicationServiceImpl } from "./CommunicationServiceImpl";
 import { inject, singleton } from "tsyringe";
 import { InMemoryServerContext } from "../../context/InMemoryServerContext";
@@ -17,12 +18,50 @@ export class WorkerUserServiceImpl implements WorkerUserService {
     this.logger.info(`worker user service instantiated!`);
   }
 
-  async handleUserRegister(message: IPCMessage): Promise<void> {
-    throw new Error("Method not implemented.");
+  /**
+   * handle user registration happened on primary server
+   * @param userContext context of user
+   */
+  async handleUserRegister(userContext: UserContext): Promise<void> {
+    for (const connectionId of userContext.connectionIds) {
+      if (!this.serverContext.hasClientConnection(connectionId)) {
+        this.logger.error(`connectionId: ${connectionId} does not exist for registered user: ${userContext.username}`);
+
+        /**
+         * @TODO handle error here
+         */
+        return;
+      }
+      this.serverContext.getClientConnection(connectionId)!.username = userContext.username;
+    }
+    this.serverContext.storeUserContext(userContext.username, userContext);
   }
-  async handleUserDeRegister(message: IPCMessage): Promise<void> {
-    throw new Error("Method not implemented.");
+
+  /**
+   * handle user de-register happened on primary server
+   * @param userContext
+   */
+  async handleUserDeRegister(userContext: UserContext): Promise<void> {
+    for (const connectionId of userContext.connectionIds) {
+      if (!this.serverContext.hasClientConnection(connectionId)) {
+        this.logger.error(
+          `connectionId: ${connectionId} does not exist for de-registered user: ${userContext.username}`
+        );
+        continue;
+      }
+      delete this.serverContext.getClientConnection(connectionId)!.username;
+    }
+    /**
+     * remove user from all the groups
+     */
+    if (userContext.groups) {
+      userContext.groups.forEach((groupName) => {
+        this.serverContext.removeUserFromGroup(userContext.username, groupName);
+      });
+    }
+    this.serverContext.removeUserContext(userContext.username);
   }
+
   async handleGroupRegister(message: IPCMessage): Promise<void> {
     throw new Error("Method not implemented.");
   }

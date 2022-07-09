@@ -2,7 +2,6 @@ dist
 environment
 logs
 node_modules
-public
 ssl
 
 tsconfig.json

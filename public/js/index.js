@@ -17,15 +17,28 @@ const registerButton = document.getElementById("register-user-button");
 const registerGroupButton = document.getElementById("register-group-button");
 const sendMessageButton = document.getElementById("send-message-button");
 
-let username = "";
-let selectedUser = "";
-let selectedGroup = "";
-let connectionId = null;
+const deRegisterUserButton = document.getElementById("de-register-user-button");
+const deRegisterGroupButton = document.getElementById("de-register-group-button");
+
+const context = {
+  username: "",
+  selectedUser: "",
+  selectedGroup: "",
+  connectionId: null,
+  isUserRegistered: false,
+  isUserRegisteredInGroup: false,
+};
 
 const activeUsers = {};
 
 registerButton.addEventListener("click", () => {
-  registerUser(usernameInput.value);
+  registerUser(usernameInput.value, true);
+});
+
+deRegisterUserButton.addEventListener("click", () => {
+  if (context.username && context.username.length > 0) {
+    registerUser(context.username, false);
+  }
 });
 
 registerGroupButton.addEventListener("click", () => {
@@ -54,12 +67,17 @@ function updateOnlineUsers() {
 
 function showUsername(username) {
   usernameDiv.innerText = `username: ${username}`;
-  username = username;
+  context.username = username;
 }
 
 function selectGroup(groupName) {
   selectedGroupDiv.innerText = `selected group: ${groupName}`;
-  selectedGroup = groupName;
+  context.selectedGroup = groupName;
+}
+
+function selectUser(selectedUser) {
+  selectedUserDiv.innerText = `selected user: ${selectedUser}`;
+  context.selectedUser = selectedUser;
 }
 
 function logMessage(message) {
@@ -96,6 +114,13 @@ function init() {
       setTimeout(() => {
         init();
       }, 3000);
+
+      context.isUserRegistered = false;
+      context.isUserRegisteredInGroup = false;
+      context.connectionId = null;
+      showUsername("");
+      selectUser("");
+      selectGroup("");
     });
     connectedOnce = true;
   });
@@ -105,8 +130,9 @@ function handleSignalingMessage(message) {
   try {
     const signalingMessage = JSON.parse(message);
     switch (signalingMessage.type) {
-      case "connect":
-        connectionId = connectionId;
+      case "conn":
+        logMessage(`new connectionId: ${signalingMessage.connectionId}`);
+        context.connectionId = signalingMessage.connectionId;
         break;
 
       default: //do nothing here
@@ -116,19 +142,27 @@ function handleSignalingMessage(message) {
   }
 }
 
-async function registerUser(username) {
-  logMessage(`registering user with username: ${username}`);
+async function registerUser(username, needRegister) {
+  const logText = needRegister ? "register" : "de-register";
+  logMessage(`${logText} user with username: ${username}`);
   try {
     const response = await sendHttpRequest("POST", "users/register", {
       username,
-      needRegister: true,
+      needRegister,
     });
     const responseBody = await response.json();
     if (response.ok) {
-      console.log("user registeration successful");
+      isUserRegistered = true;
+      if (needRegister) {
+        showUsername(username);
+      } else {
+        showUsername("");
+      }
+
+      console.log(`user ${logText} successful`);
       console.log(`response body: ${JSON.stringify(responseBody)}`);
     } else {
-      console.log(`user registeration failed with status ${response.status}`);
+      console.log(`user ${logText} failed with status ${response.status}`);
       if (response.bodyUsed) {
         console.log(`response body: ${JSON.stringify(responseBody)}`);
       }
@@ -144,7 +178,7 @@ async function registerUserInGroup(groupName) {
 
 function sendMessage(message) {
   logMessage(`sending message: ${message}`);
-  if (connectionId === null) {
+  if (context.connectionId === null) {
     logMessage("last message cannot be sent because there is no connection id");
     return;
   }
@@ -157,7 +191,7 @@ function sendHttpRequest(method, uri, body) {
     headers: {
       Accept: "application/json",
       "Content-Type": "application/json",
-      "connection-id": connectionId,
+      "connection-id": context.connectionId,
     },
   };
   if (body) {
@@ -167,7 +201,7 @@ function sendHttpRequest(method, uri, body) {
 }
 
 init();
-showUsername(username);
-selectGroup(selectedGroup);
-selectedUserDiv.innerText = `selected user: ${selectedUser}`;
+showUsername(context.username);
+selectGroup(context.selectedGroup);
+selectedUserDiv.innerText = `selected user: ${context.selectedUser}`;
 updateOnlineUsers();

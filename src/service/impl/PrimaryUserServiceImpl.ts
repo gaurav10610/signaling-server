@@ -128,12 +128,12 @@ export class PrimaryUserServiceImpl implements PrimaryUserService {
    */
   async handleUserDeRegister(username: string, connectionId: string): Promise<BaseSuccessResponse> {
     const userContext: UserContext | undefined = this.serverContext.getUserContext(username);
+    const clientConnection: ClientConnection | undefined = this.serverContext.getClientConnection(connectionId);
 
-    /**
-     * if user context exist then update corresponding worker server about de-register and remove
-     * user from all the groups that he is part of
-     */
     if (userContext) {
+      /**
+       * update corresponding worker server about user de-register
+       */
       this.communicationService.sendWorkerMessage(userContext.serverId!, {
         type: IPCMessageType.USER_DEREGISTER,
         serverId: userContext.serverId!,
@@ -142,9 +142,18 @@ export class PrimaryUserServiceImpl implements PrimaryUserService {
         },
       });
 
+      /**
+       * remove user from all the groups
+       */
       if (userContext.groups) {
-        userContext.groups.forEach((groupName) => {});
+        userContext.groups.forEach((groupName) => {
+          this.serverContext.removeUserFromGroup(username, groupName);
+        });
       }
+
+      // clean up the server context
+      this.serverContext.removeUserContext(username);
+      delete clientConnection?.username;
     }
 
     return {

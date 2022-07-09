@@ -16,9 +16,13 @@ export class ApiExceptionHandler {
    * @param next
    */
   handleError(err: any, httpRequest: Request, httpResponse: Response, next: NextFunction) {
-    this.logger.error(`error occured while handle api request with uri: ${httpRequest.url}`);
     if (err instanceof BaseSignalingServerException) {
       const error: BaseSignalingServerException = err as BaseSignalingServerException;
+      this.logger.error("error occured while handling api request with ", {
+        uri: httpRequest.url,
+        httpStatusCode: error.status,
+        message: error.message,
+      });
       httpResponse.status(error.status).send({
         message: error.message,
       });

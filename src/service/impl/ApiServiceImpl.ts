@@ -28,9 +28,11 @@ export class ApiServiceImpl implements ApiService {
    * @returns ServerContextResponse
    */
   async getServerContext(): Promise<ServerContextResponse> {
-    return {
+    const response: ServerContextResponse = {
       clientConnections: Object.fromEntries(this.serverContext.getAllConnections()),
+      users: Object.fromEntries(this.serverContext.getAllActiveUsers()),
     };
+    return response;
   }
 
   /**

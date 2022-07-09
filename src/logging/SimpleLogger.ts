@@ -3,7 +3,6 @@ import * as Transport from "winston-transport";
 import * as logform from "logform";
 import { singleton } from "tsyringe";
 import cluster from "cluster";
-import { info } from "console";
 
 @singleton()
 export class SimpleLogger {
@@ -79,15 +78,6 @@ export class SimpleLogger {
       exitOnError: false,
     };
     this.logger = createLogger(loggerOptions);
-  }
-
-  getJSONString(meta: any[]): any[] {
-    return meta.map((value) => {
-      if (typeof value === "object") {
-        return JSON.stringify(value);
-      }
-      return value;
-    });
   }
 
   error(message: string, ...meta: any[]) {

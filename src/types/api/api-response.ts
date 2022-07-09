@@ -23,4 +23,5 @@ export interface BaseSuccessResponse {
 
 export interface ServerContextResponse {
   clientConnections: object;
+  users: object;
 }

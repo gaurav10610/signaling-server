@@ -5,6 +5,8 @@ import { SimpleLogger } from "../logging/SimpleLogger";
 
 @singleton()
 export class ServerMiddleWare {
+  httpBodyMethods = ["post", "put"];
+
   constructor(@inject("logger") private logger: SimpleLogger) {
     logger.info("api middleware instantiated!");
   }
@@ -16,15 +18,16 @@ export class ServerMiddleWare {
    * @param next
    */
   async logRequest(httpRequest: Request, httpResponse: Response, next: NextFunction) {
-    if (httpRequest.method.toLowerCase() === "get") {
-      this.logger.info(`api request:  { method 'GET', uri: '${httpRequest.url}' }`);
-    } else {
-      this.logger.info(
-        `api request:  { method '${httpRequest.method}', uri:' ${httpRequest.url}', body: ${JSON.stringify(
-          httpRequest.body
-        )} }`
-      );
+    const requestLogObject = {
+      method: httpRequest.method,
+      url: httpRequest.url,
+      connectionId: httpRequest.header("connection-id"),
+      body: null,
+    };
+    if (this.httpBodyMethods.includes(httpRequest.method.toLowerCase())) {
+      requestLogObject.body = httpRequest.body;
     }
+    this.logger.info("api request ", requestLogObject);
     next();
   }
 

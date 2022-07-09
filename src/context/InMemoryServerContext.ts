@@ -26,7 +26,7 @@ export class InMemoryServerContext implements ServerContext {
   /**
    * stores websocket client connections in following manner
    *
-   * websocketId -> webSocketConnection
+   * websocketId -> ClientConnection
    *
    */
   private clientConnections: Map<string, ClientConnection>;
@@ -179,11 +179,11 @@ export class InMemoryServerContext implements ServerContext {
    */
   removeUserFromGroup(username: string, groupName: string): void {
     if (!this.hasGroupContext(groupName)) {
-      throw new BaseSignalingServerException(400, "group does not exist");
+      return;
     }
     const groupContext: GroupContext = this.getGroupContext(groupName)!;
     if (!groupContext.users.has(username)) {
-      throw new BaseSignalingServerException(400, "user does not exist in group");
+      return;
     }
     groupContext.users.delete(username);
   }
