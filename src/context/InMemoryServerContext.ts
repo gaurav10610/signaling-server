@@ -1,3 +1,4 @@
+import { CommonUtils } from "./../utils/CommonUtils";
 import { Worker } from "cluster";
 import { inject, singleton } from "tsyringe";
 import { BaseSignalingServerException } from "../exception/ApiExceptionHandler";
@@ -160,9 +161,13 @@ export class InMemoryServerContext implements ServerContext {
    * @param groupName
    */
   addUserInGroup(username: string, groupName: string): void {
-    if (!this.hasGroupContext(groupName)) {
-      throw new BaseSignalingServerException(400, "group does not exist");
+    if (!this.hasUserContext(username)) {
+      throw new BaseSignalingServerException(404, "user does not exist");
     }
+    if (!this.hasGroupContext(groupName)) {
+      throw new BaseSignalingServerException(404, "group does not exist");
+    }
+
     const groupContext: GroupContext = this.getGroupContext(groupName)!;
     if (groupContext.users.has(username)) {
       throw new BaseSignalingServerException(400, "user with same name already exist in group");
@@ -170,6 +175,21 @@ export class InMemoryServerContext implements ServerContext {
     groupContext.users.set(username, {
       joinedAt: new Date(),
     });
+
+    const userContext: UserContext = this.getUserContext(username)!;
+    /**
+     * initialize group array if not already initialized
+     */
+    if (!userContext.groups) {
+      userContext.groups = [];
+    }
+
+    /**
+     * check if user is already part of the group or not
+     */
+    if (!userContext.groups.includes(groupName)) {
+      userContext.groups.push(groupName);
+    }
   }
 
   /**
@@ -178,9 +198,24 @@ export class InMemoryServerContext implements ServerContext {
    * @param groupName
    */
   removeUserFromGroup(username: string, groupName: string): void {
-    if (!this.hasGroupContext(groupName)) {
-      return;
+    if (!this.hasUserContext(username)) {
+      throw new BaseSignalingServerException(404, "user does not exist");
     }
+    if (!this.hasGroupContext(groupName)) {
+      throw new BaseSignalingServerException(404, "group does not exist");
+    }
+
+    /**
+     * remove group name from user groups
+     */
+    const userContext: UserContext = this.getUserContext(username)!;
+    if (userContext.groups && userContext.groups.includes(groupName)) {
+      CommonUtils.removeArrayElement(userContext.groups, groupName);
+    }
+
+    /**
+     * remove user from group context
+     */
     const groupContext: GroupContext = this.getGroupContext(groupName)!;
     if (!groupContext.users.has(username)) {
       return;
@@ -195,11 +230,12 @@ export class InMemoryServerContext implements ServerContext {
    */
   getUserConnections(username: string): CustomWebSocket[] {
     const connections: CustomWebSocket[] = [];
-    const userContext: UserContext | undefined = this.usersContext.get(username);
-    if (userContext) {
-      userContext.connectionIds
-        .filter((connectionId) => this.clientConnections.has(connectionId))
-        .map((connectionId) => this.clientConnections.get(connectionId)!.webSocket!)
+    if (this.hasUserContext(username)) {
+      this.usersContext
+        .get(username)!
+        .connectionIds.map((connectionId) => this.clientConnections.get(connectionId))
+        .filter((clientConnection) => clientConnection !== undefined)
+        .map((clientConnection) => clientConnection!.webSocket!)
         .forEach((webSocket) => connections.push(webSocket));
     }
     return connections;
@@ -236,6 +272,18 @@ export class InMemoryServerContext implements ServerContext {
    */
   getClientConnection(connectionId: string): ClientConnection | undefined {
     return this.clientConnections.get(connectionId);
+  }
+
+  /**
+   * update client connection's username
+   * @param connectionId websocket connection identifier
+   * @param username username of the user who owns the connection with specied connection id
+   */
+  updateClientUsername(connectionId: string, username: string): void {
+    if (!this.clientConnections.has(connectionId)) {
+      throw new BaseSignalingServerException(404, "connection id not found");
+    }
+    this.getClientConnection(connectionId)!.username = username;
   }
 
   /**

@@ -7,8 +7,13 @@ export interface BaseSignalingMessage {
 }
 
 export enum BroadCastType {
-  ALL,
-  GROUP,
+  ALL = "all",
+  GROUP = "group",
+}
+
+export interface GroupInfo {
+  username: string;
+  groupName: string;
 }
 
 // connection open acknowledment

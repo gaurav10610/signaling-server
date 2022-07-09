@@ -1,9 +1,11 @@
-import { UserContext } from "./../../types/context";
+import { CommonUtils } from "./../../utils/CommonUtils";
+import { GroupInfo } from "./../../types/message";
+import { GroupContext, UserContext } from "./../../types/context";
 import { CommunicationServiceImpl } from "./CommunicationServiceImpl";
 import { inject, singleton } from "tsyringe";
 import { InMemoryServerContext } from "../../context/InMemoryServerContext";
 import { SimpleLogger } from "../../logging/SimpleLogger";
-import { ClientConnectionStatus, IPCMessage, IPCMessageType } from "../../types/message";
+import { ClientConnectionStatus, IPCMessageType } from "../../types/message";
 import { CustomWebSocket } from "../../types/websocket";
 import { WorkerUserService } from "./../user-spec";
 
@@ -62,11 +64,20 @@ export class WorkerUserServiceImpl implements WorkerUserService {
     this.serverContext.removeUserContext(userContext.username);
   }
 
-  async handleGroupRegister(message: IPCMessage): Promise<void> {
-    throw new Error("Method not implemented.");
+  /**
+   * handle user's group register on primary server
+   * @param groupInfo
+   */
+  async handleGroupRegister(groupInfo: GroupInfo): Promise<void> {
+    this.serverContext.addUserInGroup(groupInfo.username, groupInfo.groupName);
   }
-  async handleGroupDeRegister(message: IPCMessage): Promise<void> {
-    throw new Error("Method not implemented.");
+
+  /**
+   * handle user's de-register on primary server
+   * @param groupInfo
+   */
+  async handleGroupDeRegister(groupInfo: GroupInfo): Promise<void> {
+    this.serverContext.removeUserFromGroup(groupInfo.username, groupInfo.groupName);
   }
 
   /**

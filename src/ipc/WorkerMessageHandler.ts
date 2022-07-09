@@ -1,6 +1,6 @@
 import { UserContext } from "./../types/context";
 import { WorkerUserServiceImpl } from "./../service/impl/WorkerUserServiceImpl";
-import { IPCMessage, IPCMessageType } from "../types/message";
+import { IPCMessage, IPCMessageType, GroupInfo } from "../types/message";
 import { inject, singleton } from "tsyringe";
 import { SimpleLogger } from "../logging/SimpleLogger";
 import { InMemoryServerContext } from "../context/InMemoryServerContext";
@@ -31,6 +31,14 @@ export class WorkerMessageHandler {
 
         case IPCMessageType.USER_DEREGISTER:
           this.userService.handleUserDeRegister(message.message as UserContext);
+          break;
+
+        case IPCMessageType.GROUP_REGISTER:
+          this.userService.handleGroupRegister(message.message as GroupInfo);
+          break;
+
+        case IPCMessageType.GROUP_DEREGISTER:
+          this.userService.handleGroupDeRegister(message.message as GroupInfo);
           break;
 
         case IPCMessageType.BROADCAST_MESSAGE:

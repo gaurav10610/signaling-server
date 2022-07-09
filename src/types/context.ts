@@ -45,6 +45,7 @@ export interface ServerContext {
   storeClientConnection(connectionId: string, clientConnection: ClientConnection): void;
   removeClientConnection(connectionId: string): void;
   getClientConnection(connectionId: string): ClientConnection | undefined;
+  updateClientUsername(connectionId: string, username: string): void;
   getAllConnections(): Map<string, ClientConnection>;
   getServerId(): number | undefined;
   setServerId(serverId: number): void;

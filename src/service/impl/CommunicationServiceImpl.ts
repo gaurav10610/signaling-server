@@ -81,13 +81,44 @@ export class CommunicationServiceImpl implements CommunicationService {
    * broadcast a message to all connected clients of a websocket server
    * @param data signaling message that needs to be broadcasted
    */
-  async broadCastMessage(data: BaseSignalingMessage): Promise<void> {
-    const ipcMessage: IPCMessage = {
-      message: data,
-      type: IPCMessageType.BROADCAST_MESSAGE,
-      serverId: this.serverContext.getServerId()!,
-    };
-    this.sendPrimaryServerMessage(ipcMessage);
+  async broadCastMessage(data: BaseSignalingMessage, updateAllWorkers: boolean = false): Promise<void> {
+    /**
+     * populate default broadCastType if needed
+     */
+    if (data.broadCastType === undefined) {
+      data.broadCastType = BroadCastType.GROUP;
+    }
+
+    /**
+     * update to primary server
+     */
+    if (updateAllWorkers) {
+      this.sendPrimaryServerMessage({
+        message: data,
+        type: IPCMessageType.BROADCAST_MESSAGE,
+        serverId: this.serverContext.getServerId()!,
+      });
+    }
+
+    /**
+     * send message to all the groups that user is part of
+     */
+    if (data.broadCastType === BroadCastType.GROUP) {
+      const username: string = data.from;
+      if (this.serverContext.hasUserContext(username) && this.serverContext.getUserContext(username)!.groups) {
+        this.serverContext
+          .getUserContext(username)!
+          .groups!.filter((groupName) => this.serverContext.hasGroupContext(groupName))
+          .map((groupName) => this.serverContext.getGroupContext(groupName))
+          .flatMap((groupContext) => Object.keys(groupContext!.users))
+          .flatMap((user) => this.serverContext.getUserConnections(user))
+          .forEach((webSocket) => webSocket.send(JSON.stringify(data)));
+      }
+    }
+
+    /**
+     * send message to all the clients connected to this worker server
+     */
     if (data.broadCastType === BroadCastType.ALL) {
       for (const clientConnection of this.serverContext.getAllConnections().values()) {
         clientConnection.webSocket!.send(JSON.stringify(data));

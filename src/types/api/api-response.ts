@@ -1,4 +1,4 @@
-import { ClientConnection, GroupContext } from "./../context";
+import { GroupContext } from "./../context";
 export interface GetUserStatusResponse {
   status: boolean;
 }
@@ -14,6 +14,10 @@ export interface GetActiveUsersResponse {
 
 export interface ActiveGroupUsersResponse {
   groups: Map<string, GroupContext>;
+}
+
+export interface BaseServerResponse {
+  connectionId: string;
 }
 
 export interface BaseSuccessResponse {

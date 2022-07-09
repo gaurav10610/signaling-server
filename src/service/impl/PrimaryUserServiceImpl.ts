@@ -1,3 +1,4 @@
+import { GroupInfo } from "./../../types/message";
 import { CommunicationServiceImpl } from "./CommunicationServiceImpl";
 import { inject, singleton } from "tsyringe";
 import { InMemoryServerContext } from "../../context/InMemoryServerContext";
@@ -107,8 +108,7 @@ export class PrimaryUserServiceImpl implements PrimaryUserService {
      * keep client connect id -> username mapping to make search faster
      * in case of user disconnect
      **/
-    clientConnection.username = username;
-
+    this.serverContext.updateClientUsername(connectionId, username);
     /**
      * store user context on primary server
      */
@@ -137,9 +137,7 @@ export class PrimaryUserServiceImpl implements PrimaryUserService {
       this.communicationService.sendWorkerMessage(userContext.serverId!, {
         type: IPCMessageType.USER_DEREGISTER,
         serverId: userContext.serverId!,
-        message: {
-          ...userContext,
-        },
+        message: userContext,
       });
 
       /**
@@ -162,11 +160,63 @@ export class PrimaryUserServiceImpl implements PrimaryUserService {
     };
   }
 
+  /**
+   * handle user register in the specified group
+   * @param username username of the registering user
+   * @param groupName group name in which user wants to register
+   *
+   * @returns @BaseSuccessResponse
+   */
   async handleGroupRegister(username: string, groupName: string): Promise<BaseSuccessResponse> {
-    throw new Error("Method not implemented.");
+    this.serverContext.addUserInGroup(username, groupName);
+    const userContext: UserContext = this.serverContext.getUserContext(username)!;
+    const groupInfo: GroupInfo = {
+      username,
+      groupName,
+    };
+
+    /**
+     * update worker server about user's group registration
+     */
+    this.communicationService.sendWorkerMessage(userContext.serverId!, {
+      type: IPCMessageType.GROUP_REGISTER,
+      serverId: userContext.serverId!,
+      message: groupInfo,
+    });
+
+    return {
+      success: true,
+      username,
+    };
   }
 
+  /**
+   * handle user de-register from the specified group
+   * @param username username of the registering user
+   * @param groupName group name in which user wants to register
+   *
+   * @returns @BaseSuccessResponse
+   */
   async handleGroupDeRegister(username: string, groupName: string): Promise<BaseSuccessResponse> {
-    throw new Error("Method not implemented.");
+    this.serverContext.removeUserFromGroup(username, groupName);
+    const userContext: UserContext = this.serverContext.getUserContext(username)!;
+    const groupInfo: GroupInfo = {
+      username,
+      groupName,
+    };
+
+    /**
+     * update worker server about user's group registration
+     */
+    this.communicationService.sendWorkerMessage(userContext.serverId!, {
+      type: IPCMessageType.GROUP_DEREGISTER,
+      serverId: userContext.serverId!,
+      message: groupInfo,
+    });
+
+    return {
+      success: true,
+      username,
+    };
   }
 }

@@ -1,4 +1,4 @@
-import { IPCMessage } from "./../types/message";
+import { GroupInfo, IPCMessage } from "./../types/message";
 import { BaseSuccessResponse } from "./../types/api/api-response";
 import { CustomWebSocket } from "../types/websocket";
 import { UserContext } from "../types/context";
@@ -8,8 +8,8 @@ export interface BaseUserService {}
 export interface WorkerUserService extends BaseUserService {
   handleUserRegister(userContext: UserContext): Promise<void>;
   handleUserDeRegister(userContext: UserContext): Promise<void>;
-  handleGroupRegister(message: IPCMessage): Promise<void>;
-  handleGroupDeRegister(message: IPCMessage): Promise<void>;
+  handleGroupRegister(groupInfo: GroupInfo): Promise<void>;
+  handleGroupDeRegister(groupInfo: GroupInfo): Promise<void>;
   handleClientDisconnect(webSocket: CustomWebSocket): Promise<void>;
   handleClientError(error: Error, webSocket: CustomWebSocket): Promise<void>;
 }
